@@ -1,11 +1,16 @@
 import os
-
+import logging
 import flask_wtf
-from flask import Flask, render_template_string
-from flask_security import auth_required, SQLAlchemySessionUserDatastore,\
+from flask import Flask, render_template_string, jsonify, g, current_app
+from flask_cors import CORS
+from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
     Security, hash_password, current_user
+
+from vocabulary_mgr.storage import StorageManager
+from vocabulary_mgr.wordcollectionmgr import clone_shared_collection
 from .database import get_db_session, init_db, init_app
 from .models import User, Role
+from vocabulary_mgr import VocabularyMgr
 
 security = None
 
@@ -57,7 +62,7 @@ def create_app(test_config=None):
         WTF_CSRF_CHECK_DEFAULT = False,
         WTF_CSRF_TIME_LIMIT = None,
 
-        SECURITY_REDIRECT_HOST = 'localhost:8080'
+        COLLECTION_STORAGE_PATH = "dev_instance_data/collection_storage"
 
     )
 
@@ -75,22 +80,29 @@ def create_app(test_config=None):
         pass
 
 
-
     with app.app_context():
         # Setup Flask-Security
         # In your app
         # Enable CSRF on all api endpoints.
-        flask_wtf.CSRFProtect(app)
-        user_datastore = SQLAlchemySessionUserDatastore(get_db_session(), User, Role)
+        # flask_wtf.CSRFProtect(app)
+        # user_datastore = SQLAlchemySessionUserDatastore(get_db_session(), User, Role)
+        user_datastore = None
         global security
-        security = Security(app, user_datastore)
+        # security = Security(app, user_datastore)
+        # CORS(app)  TODO remove or revise before publishing!
+        # logging.getLogger('flask_cors').level = logging.DEBUG
+        clone_shared_collection(get_storage_manager(), "collection", "test_storage_id")
+
+    from . import vocabulary
+    app.register_blueprint(vocabulary.bp)
+
 
     @app.route("/hello")
     def hello():
-        return "Hello, World!"
+        return jsonify({"hello": "world"})
 
     # Create a user to test with
-    @app.before_first_request
+    # @app.before_first_request
     def create_user():
         init_db()
         user_datastore.create_user(email="test@me.com", password=hash_password("password"))
@@ -100,7 +112,7 @@ def create_app(test_config=None):
     @app.route("/")
     @auth_required()
     def home():
-        return render_template_string('Hello {{email}} !', email=current_user.email)
+        return jsonify({"email": render_template_string('{{email}}', email=current_user.email)})
 
     init_app(app)
 
@@ -117,3 +129,16 @@ def create_app(test_config=None):
     app.add_url_rule("/", endpoint="index")
 
     return app
+
+
+def get_vocabulary_manager() -> VocabularyMgr:
+    if "vocabulary_mgr" not in g:
+        # g.vocabulary_mgr = VocabularyMgr(current_app.config["COLLECTION_STORAGE_PATH"])
+        pass
+    return None
+
+
+def get_storage_manager() -> StorageManager:
+    if "storage_mgr" not in g:
+        g.storage_mgr = StorageManager(current_app.config["COLLECTION_STORAGE_PATH"])
+    return g.storage_mgr

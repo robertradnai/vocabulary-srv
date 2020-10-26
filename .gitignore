@@ -1,6 +1,8 @@
 # Own entries
 .idea/
 server-repo.iml
+dev_instance_data/
+tests/testdata_temp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
