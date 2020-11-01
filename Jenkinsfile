@@ -9,8 +9,9 @@ pipeline {
         stage('Build') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip install /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
-                    sh 'pip install --user --editable .'
+                    sh 'pip freeze'
+                    sh 'pip install --force-reinstall --user /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
+                    sh 'pip install --force-reinstall --user --editable .'
                 }
 
             }
@@ -18,9 +19,9 @@ pipeline {
         stage('Test') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    dir('tests') {
-                        sh 'pytest'
-                    }
+                    sh 'pip freeze'
+                    sh 'python -m pytest'
+
                 }
             }
         }
