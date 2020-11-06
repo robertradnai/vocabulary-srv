@@ -3,7 +3,7 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib'
+        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib,/var/jenkins_dist/vocabulary-srv:/dist/vocabulary-srv'
     } }
     stages {
         stage('Build') {
@@ -20,7 +20,9 @@ pipeline {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
                     sh 'pip freeze'
-                    sh 'python -m pytest'
+                    sh 'pip install pytest coverage'
+                    sh 'coverage run --source vocabulary_mgr,vocabulary_srv  -m pytest'
+                    sh 'coverage report'
 
                 }
             }
