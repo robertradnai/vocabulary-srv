@@ -3,13 +3,12 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib,/var/jenkins_dist/vocabulary-srv:/dist/vocabulary-srv'
+        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist/vocabulary-srv'
     } }
     stages {
         stage('Build') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip freeze'
                     sh 'pip install --force-reinstall --user /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
                     sh 'pip install --force-reinstall --user --editable .'
                 }
@@ -19,10 +18,9 @@ pipeline {
         stage('Test') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip freeze'
                     sh 'pip install pytest coverage'
-                    sh 'coverage run --source vocabulary_mgr,vocabulary_srv  -m pytest'
-                    sh 'coverage report'
+                    sh 'python -m coverage run --source vocabulary_mgr,vocabulary_srv -m pytest'
+                    sh 'python -m coverage report'
 
                 }
             }

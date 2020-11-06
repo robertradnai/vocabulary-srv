@@ -17,7 +17,7 @@ TEST_CONFIG: dict = {
 def app():
     # db_fd, db_path = tempfile.mkstemp()
 
-    app = create_app()
+    app = create_app(TEST_CONFIG)
 
     with app.app_context():
         pass
