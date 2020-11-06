@@ -35,7 +35,9 @@ def guest_auth_required(view):
 @bp.route('/shared-lists', methods=('GET',))
 def get_shared_lists():
 
-    word_list_elements = show_shared_collections()
+    word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
+                                                              current_app.config["SHARED_WORKBOOKS_PATH"]),
+                                                 "dummy_metadata_folder")
     res = [
         {"wordCollectionDisplayName": word_list_element.word_collection_display_name,
          "wordListDisplayName": word_list_element.word_list_display_name,
@@ -71,7 +73,11 @@ def clone_shared(temp_user):
 
     # Find the shared collection among the file
     voc = Vocabulary()
-    voc.load(os.path.join("dev_instance_data/shared_collections", collection_name), load_wordlist_book)
+    voc.load(os.path.join(current_app.instance_path,
+                          current_app.config["SHARED_WORKBOOKS_PATH"],
+                          collection_name),
+             load_wordlist_book)
+
     for word_list in voc.get_word_sheet_list():
         voc.reset_progress(word_list)
 

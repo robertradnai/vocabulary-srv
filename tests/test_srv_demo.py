@@ -8,6 +8,10 @@ def test_config():
     assert create_app({'TESTING': True}).testing
 
 
+def test_list_shared_collections(client):
+    r_list: Response = client.get('/api/vocabulary/shared-lists')
+    # TODO add asserts
+
 def test_demo_quiz(client):
     r_register: Response = client.post('/api/vocabulary/register-guest')
     assert 'guestJwt' in r_register.json

@@ -1,5 +1,7 @@
 import os
 import logging
+from pdb import set_trace
+
 import flask_wtf
 from flask import Flask, render_template_string, jsonify, g, current_app
 from flask_cors import CORS
@@ -7,7 +9,6 @@ from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
     Security, hash_password, current_user
 
 from vocabulary_mgr.storage import StorageManager
-from vocabulary_mgr.wordcollectionmgr import clone_shared_collection
 from .database import get_db_session, init_db, init_app
 from .models import User, Role
 from vocabulary_mgr import VocabularyMgr
@@ -25,59 +26,64 @@ def create_app(test_config=None):
         DEBUG=True,
         # Bcrypt is set as default SECURITY_PASSWORD_HASH, which requires a salt
         # Generate a good salt using: secrets.SystemRandom().getrandbits(128)
-        SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634'),
+        SECURITY_PASSWORD_SALT=os.environ.get("SECURITY_PASSWORD_SALT", '146585145368132386173505678016728509634'),
 
         # no forms so no concept of flashing
-        SECURITY_FLASH_MESSAGES = False,
+        SECURITY_FLASH_MESSAGES=False,
 
         # Need to be able to route backend flask API calls. Use 'accounts'
         # to be the Flask-Security endpoints.
-        SECURITY_URL_PREFIX = '/api/accounts',
+        SECURITY_URL_PREFIX='/api/accounts',
 
         # Turn on all the great Flask-Security features
-        SECURITY_RECOVERABLE = True,
-        SECURITY_TRACKABLE = True,
-        SECURITY_CHANGEABLE = True,
-        SECURITY_CONFIRMABLE = False,
-        SECURITY_REGISTERABLE = True, # TODO disable this before public test!
-        SECURITY_UNIFIED_SIGNIN = False,
+        SECURITY_RECOVERABLE=True,
+        SECURITY_TRACKABLE=True,
+        SECURITY_CHANGEABLE=True,
+        SECURITY_CONFIRMABLE=False,
+        SECURITY_REGISTERABLE=True, # TODO disable this before public test!
+        SECURITY_UNIFIED_SIGNIN=False,
 
         # These need to be defined to handle redirects
         # As defined in the API documentation - they will receive the relevant context
-        SECURITY_POST_CONFIRM_VIEW = "/confirmed",
-        SECURITY_CONFIRM_ERROR_VIEW = "/confirm-error",
-        SECURITY_RESET_VIEW = "/reset-password",
-        SECURITY_RESET_ERROR_VIEW = "/reset-password",
-        SECURITY_REDIRECT_BEHAVIOR = "spa",
+        SECURITY_POST_CONFIRM_VIEW="/confirmed",
+        SECURITY_CONFIRM_ERROR_VIEW="/confirm-error",
+        SECURITY_RESET_VIEW="/reset-password",
+        SECURITY_RESET_ERROR_VIEW="/reset-password",
+        SECURITY_REDIRECT_BEHAVIOR="spa",
 
         # CSRF protection is critical for all session-based browser UIs
 
         # enforce CSRF protection for session / browser - but allow token-based
         # API calls to go through
-        SECURITY_CSRF_PROTECT_MECHANISMS = ["session", "basic"],
-        SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS = True,
+        SECURITY_CSRF_PROTECT_MECHANISMS=["session", "basic"],
+        SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS=True,
 
         # Send Cookie with csrf-token. This is the default for Axios and Angular.
-        SECURITY_CSRF_COOKIE = {"key": "XSRF-TOKEN"},
-        WTF_CSRF_CHECK_DEFAULT = False,
-        WTF_CSRF_TIME_LIMIT = None,
+        SECURITY_CSRF_COOKIE={"key": "XSRF-TOKEN"},
+        WTF_CSRF_CHECK_DEFAULT=False,
+        WTF_CSRF_TIME_LIMIT=None,
 
-        COLLECTION_STORAGE_PATH = "dev_instance_data/collection_storage"
+        COLLECTION_STORAGE_PATH="user_collections",
+        SHARED_WORKBOOKS_PATH="shared_collections"
 
     )
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile("config.py", silent=True)
-    else:
-        # load the test config if passed in
-        app.config.update(test_config)
-
-    # ensure the instance folder exists
+    # Ensure that the instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # Loading configuration
+    config_path=os.path.join(app.instance_path, "config.py")
+    if test_config is not None:
+        app.config.from_mapping(test_config)
+        print("Loaded test configuration.")
+    elif os.path.isfile(config_path):
+        app.config.from_pyfile(config_path)
+        print(f"Loaded configuration from {config_path}.")
+    else:
+        print(f"Configuration file at {config_path} isn't found, default configuration values are used.")
 
 
     with app.app_context():
@@ -91,7 +97,6 @@ def create_app(test_config=None):
         # security = Security(app, user_datastore)
         # CORS(app)  TODO remove or revise before publishing!
         # logging.getLogger('flask_cors').level = logging.DEBUG
-        clone_shared_collection(get_storage_manager(), "collection", "test_storage_id")
 
     from . import vocabulary
     app.register_blueprint(vocabulary.bp)

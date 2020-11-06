@@ -17,6 +17,6 @@ class VocabularyMgr():
     def pick_question(self, collection_name, list_name, pick_strategy):
 
         voc = Vocabulary()
-        voc.load("dev_instance_data/shared_collections/testdict.xlsx", load_wordlist_book)
+        voc.load("tests/testdata/testdict.xlsx", load_wordlist_book)
         show_flashcard, question, flashcard = voc.choice_quiz(list_name, pick_strategy)
         return show_flashcard, question, flashcard

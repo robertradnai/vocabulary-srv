@@ -7,6 +7,6 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'flask', 'sqlalchemy', 'flask-security-too', 'pyjwt', 'flask-cors', 'pytest'
+        'flask', 'sqlalchemy', 'flask-security-too', 'pyjwt', 'flask-cors', 'pytest', 'pyyaml'
     ],
 )
