@@ -8,6 +8,8 @@ from vocabulary.stateless import Vocabulary
 from vocabulary.dataaccess import load_wordlist_book
 from pdb import set_trace
 
+from werkzeug.utils import secure_filename
+
 from vocabulary_mgr.wordcollectionmgr import get_storage_element_id, show_shared_collections
 from . import get_vocabulary_manager, get_storage_manager
 import os
@@ -69,7 +71,7 @@ def register_guest():
 @guest_auth_required
 def clone_shared(temp_user):
 
-    collection_name = request.args['wordCollection']
+    collection_name = secure_filename(request.args['wordCollection'])
 
     # Find the shared collection among the file
     voc = Vocabulary()
@@ -93,7 +95,7 @@ def clone_shared(temp_user):
 @guest_auth_required
 def pick_question(temp_user):
 
-    collection_name = request.args["wordCollection"]
+    collection_name = secure_filename(request.args["wordCollection"])
     list_name = request.args["wordList"]
     pick_strategy = request.args["wordPickStrategy"]
 
@@ -136,7 +138,7 @@ def pick_question(temp_user):
 @bp.route('/answer-question', methods=('POST',))
 @guest_auth_required
 def answer_question(temp_user):
-    collection_name = request.args["wordCollection"]
+    collection_name = secure_filename(request.args["wordCollection"])
     list_name = request.args["wordList"]
     answers = request.json["answers"]
 
