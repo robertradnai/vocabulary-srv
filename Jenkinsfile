@@ -3,14 +3,14 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist/vocabulary-srv'
+        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist_output/'
     } }
     stages {
         stage('Build') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip install --force-reinstall --user /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
-                    sh 'pip install --force-reinstall --user --editable .'
+                    sh 'pip install /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
+                    sh 'pip install --editable .'
                 }
 
             }
@@ -25,7 +25,6 @@ pipeline {
                 }
             }
         }
-        /*
         stage('Packaging') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
@@ -38,11 +37,15 @@ pipeline {
         stage('Saving package') {
             steps {
                 sh 'id'
-                sh 'ls -la /dist_persistent'
-                sh 'rm -f /dist_persistent/*'
-                sh 'cp dist/*.whl /dist_persistent/'
+                sh 'ls -la /dist_output'
+                sh 'rm -f /dist_output/*'
+                sh 'cp dist/*.whl /dist_output/'
             }
         }
-        */
+    }
+    post {
+        always {
+            cleanWs()
+        }
     }
 }
