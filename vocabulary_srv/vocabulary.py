@@ -36,8 +36,8 @@ def guest_auth_required(view):
 def get_shared_lists():
 
     word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
-                                                              current_app.config["SHARED_WORKBOOKS_PATH"]),
-                                                 "dummy_metadata_folder")
+                                                              current_app.config["SHARED_WORKBOOKS_METADATA"]))
+
     res = [
         {"wordCollectionDisplayName": word_list_element.word_collection_display_name,
          "wordListDisplayName": word_list_element.word_list_display_name,

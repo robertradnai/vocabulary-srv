@@ -1,10 +1,11 @@
 import os
+from pdb import set_trace
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
 from abc import ABC, abstractmethod
 from typing import List
-from flask import current_app
+from yaml import load, Loader
 
 
 class IStorageManager(ABC):
@@ -31,16 +32,22 @@ class WordListsElement:
         self.word_list_display_name = word_list_display_name
 
 
-def show_shared_collections(shared_collections_folder: str, shared_collections_metadata_folder: str):
-    voc = Vocabulary()
-    voc.load(os.path.join(shared_collections_folder, "testdict.xlsx"), load_wordlist_book)
-    for word_list in voc.get_word_sheet_list():
-        voc.reset_progress(word_list)
+def show_shared_collections(shared_collections_metadata: str):
 
-    word_lists = [WordListsElement("testdict.xlsx",
-                                   element,
-                                   "Test collection",
-                                   element) for element in voc.get_word_sheet_list()]
+    with open(shared_collections_metadata) as f:
+        metadata_file_content = f.read()
+
+    metadata = load(metadata_file_content, Loader=Loader)
+
+    word_lists = []
+    for collection in metadata['shared_collections_xlsx']:
+        for word_list in collection["wordLists"]:
+            word_lists.append(
+                WordListsElement(word_collection_name=collection["wordCollection"],
+                                 word_collection_display_name=collection["wordCollectionDisplayName"],
+                                 word_list_name= word_list["wordList"],
+                                 word_list_display_name=word_list["wordListDisplayName"])
+            )
 
     return word_lists
 

@@ -1,0 +1,19 @@
+{
+  "shared_collections_xlsx": [
+    {
+      "wordCollection": "en_fin_demo.xlsx",
+      "wordCollectionDisplayName": "Finnish - English",
+      "wordLists": [
+        {"wordList": "basics1", "wordListDisplayName": "Basics"},
+        {"wordList": "intermediate1", "wordListDisplayName": "Intermediate"}
+      ]
+    },
+    {
+      "wordCollection": "de_hu_demo.xlsx",
+      "wordCollectionDisplayName": "Német - Magyar",
+      "wordLists": [
+        {"wordList": "alapok", "wordListDisplayName": "Alapok"}
+      ]
+    }
+  ]
+}

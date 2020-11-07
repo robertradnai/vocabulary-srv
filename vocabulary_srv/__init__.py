@@ -64,7 +64,8 @@ def create_app(test_config=None):
         WTF_CSRF_TIME_LIMIT=None,
 
         COLLECTION_STORAGE_PATH="user_collections",
-        SHARED_WORKBOOKS_PATH="shared_collections"
+        SHARED_WORKBOOKS_PATH="shared_collections",
+        SHARED_WORKBOOKS_METADATA="shared_collections_metadata.yml"
 
     )
 
