@@ -2,8 +2,8 @@ from vocabulary_srv import create_app
 from pdb import set_trace
 from flask.wrappers import Response
 
-TEST_COLLECTION_NAME = "en_fin_demo.xlsx"
-TEST_LIST_NAME = "basics1"
+TEST_COLLECTION_NAME = "testdict.xlsx"
+TEST_LIST_NAME = "shorttest"
 
 
 def test_config():
@@ -13,8 +13,9 @@ def test_config():
 
 def test_demo_quiz(client):
     r_list: Response = client.get('/api/vocabulary/shared-lists')
-    set_trace()
 
+    assert TEST_COLLECTION_NAME == r_list.json[0]["wordCollection"]
+    assert TEST_LIST_NAME == r_list.json[0]["wordList"]
 
     r_register: Response = client.post('/api/vocabulary/register-guest')
     assert 'guestJwt' in r_register.json
@@ -24,11 +25,11 @@ def test_demo_quiz(client):
     # https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
     headers = {'Guest-Authentication-Token': guest_jwt}
 
-    r_clone_word_list = client.post('/api/vocabulary/clone-word-list?wordCollection=testdict.xlsx', headers=headers)
+    r_clone_word_list = client.post(f'/api/vocabulary/clone-word-list?wordCollection={TEST_COLLECTION_NAME}', headers=headers)
     assert r_clone_word_list.json['success']
 
-    r_quiz = client.post('/api/vocabulary/pick-question?wordCollection=testdict'
-                         '&wordList=shorttest&wordPickStrategy=dummy', headers=headers)
+    r_quiz = client.post(f'/api/vocabulary/pick-question?wordCollection=testdict'
+                         f'&wordList={TEST_LIST_NAME}&wordPickStrategy=dummy', headers=headers)
 
     assert "quizList" in r_quiz.json
     quiz_list = r_quiz.json['quizList']
@@ -41,7 +42,7 @@ def test_demo_quiz(client):
 
     # Submit batch answer
     r_submit_answer = client.post('/api/vocabulary/answer-question?wordCollection=testdict'
-                                  '&wordList=shorttest&wordPickStrategy=dummy',
+                                  f'&wordList={TEST_LIST_NAME}&wordPickStrategy=dummy',
                                   headers=headers, json={"answers": answers})
 
     # Verify if a few correct answers had an effect on the learning progress
