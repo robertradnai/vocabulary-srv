@@ -36,10 +36,9 @@ pipeline {
         }
         stage('Saving package') {
             steps {
-                sh 'id'
-                sh 'ls -la /dist_output'
-                sh 'rm -f /dist_output/*'
-                sh 'cp dist/*.whl /dist_output/'
+                sh 'mkdir -p /dist_output/$GIT_BRANCH'
+                sh 'rm -f /dist_output/$GIT_BRANCH/*'
+                sh 'cp dist/*.whl /dist_output/$GIT_BRANCH/'
             }
         }
     }
