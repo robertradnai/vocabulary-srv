@@ -17,7 +17,8 @@ security = None
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_relative_config=True)
+    instance_path = os.environ.get("FLASK_INSTANCE_FOLDER", None)
+    app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
     app.config.from_mapping(
         # Generate a nice key using secrets.token_urlsafe()
         SECRET_KEY=os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw'),
