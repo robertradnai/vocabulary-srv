@@ -10,7 +10,8 @@ from vocabulary_srv import create_app
 TEST_CONFIG: dict = {
     'TESTING': True,
     'SHARED_WORKBOOKS_PATH': "../tests/testdata/shared_collections",
-    "SHARED_WORKBOOKS_METADATA": "../tests/testdata/shared_collections_metadata.yml"
+    "SHARED_WORKBOOKS_METADATA": "../tests/testdata/shared_collections_metadata.yml",
+    "COLLECTION_STORAGE_PATH": "../tests/testdata/user_collections"
     # 'DATABASE': db_path,
 }
 

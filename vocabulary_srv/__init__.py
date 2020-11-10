@@ -17,8 +17,7 @@ security = None
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
-    instance_path = os.environ.get("FLASK_INSTANCE_FOLDER", None)
-    app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
+    app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         # Generate a nice key using secrets.token_urlsafe()
         SECRET_KEY=os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw'),
@@ -147,5 +146,6 @@ def get_vocabulary_manager() -> VocabularyMgr:
 
 def get_storage_manager() -> StorageManager:
     if "storage_mgr" not in g:
-        g.storage_mgr = StorageManager(current_app.config["COLLECTION_STORAGE_PATH"])
+        g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
+                                                    current_app.config["COLLECTION_STORAGE_PATH"]))
     return g.storage_mgr
