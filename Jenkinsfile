@@ -3,7 +3,7 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist_output/'
+        args '--volume /var/jenkins_dist/vocabulary-lib/main:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv/$GIT_BRANCH:/dist_output/'
     } }
     stages {
         stage('Build') {
@@ -36,9 +36,9 @@ pipeline {
         }
         stage('Saving package') {
             steps {
-                sh 'mkdir -p /dist_output/$GIT_BRANCH'
-                sh 'rm -f /dist_output/$GIT_BRANCH/*'
-                sh 'cp dist/*.whl /dist_output/$GIT_BRANCH/'
+                sh 'mkdir -p /dist_output/'
+                sh 'rm -f /dist_output/*'
+                sh 'cp dist/*.whl /dist_output/'
             }
         }
     }
