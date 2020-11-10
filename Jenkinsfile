@@ -3,13 +3,13 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib/main:/dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv/$GIT_BRANCH:/dist_output/'
+        args '--volume /var/jenkins_dist/vocabulary-lib:/imported_dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist_output'
     } }
     stages {
         stage('Build') {
             steps {
                 withEnv(["HOME=${env.WORKSPACE}"]) {
-                    sh 'pip install /dist/vocabulary-lib/vocabulary_RR-0.1-py3-none-any.whl'
+                    sh 'pip install /imported_dist/vocabulary-lib/main/vocabulary_RR-0.1-py3-none-any.whl'
                     sh 'pip install --editable .'
                 }
 
@@ -36,9 +36,9 @@ pipeline {
         }
         stage('Saving package') {
             steps {
-                sh 'mkdir -p /dist_output/'
-                sh 'rm -f /dist_output/*'
-                sh 'cp dist/*.whl /dist_output/'
+                sh 'mkdir -p /dist_output/$GIT_BRANCH'
+                sh 'rm -f /dist_output/$GIT_BRANCH/*'
+                sh 'cp dist/*.whl /dist_output/$GIT_BRANCH/'
             }
         }
     }
