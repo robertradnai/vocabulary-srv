@@ -3,7 +3,7 @@
 pipeline {
     agent { docker {
         image 'python:3.8.5-slim'
-        args '--volume /var/jenkins_dist/vocabulary-lib:/imported_dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist_output'
+        args '--volume /var/jenkins_dist/vocabulary-lib:/imported_dist/vocabulary-lib --volume /var/jenkins_dist/vocabulary-srv:/dist_output --network host'
     } }
     stages {
         stage('Build') {
