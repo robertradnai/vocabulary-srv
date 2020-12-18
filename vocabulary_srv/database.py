@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import click
-from flask import g
+from flask import g, current_app
 from flask.cli import with_appcontext
 
 engine = create_engine('sqlite:////tmp/test.db',
@@ -12,7 +12,13 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 Base = declarative_base()
 
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 
+def get_db():
+    if "db" not in g:
+        g.db = SQLAlchemy(current_app)
+        return g.db
 
 
 
@@ -51,7 +57,10 @@ def init_db():
 
 
     #db = get_db_session()
-    Base.metadata.drop_all(engine)
+    db.drop_all()
+    db.create_all()
+
+    # Base.metadata.drop_all(engine)
     #with current_app.open_resource("schema.sql") as f:
         #db.executescript(f.read().decode("utf8"))
 
