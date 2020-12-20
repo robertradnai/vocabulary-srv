@@ -1,15 +1,19 @@
-import pytest
+import os
+import tempfile
 
-from vocabulary_srv import create_app, init_db
+import pytest
+from vocabulary_srv import create_app
+
+# with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
+#    _data_sql = f.read().decode('utf8')
 
 TEST_CONFIG: dict = {
     'TESTING': True,
     'SHARED_WORKBOOKS_PATH': "../tests/testdata/shared_collections",
     "SHARED_WORKBOOKS_METADATA": "../tests/testdata/shared_collections_metadata.yml",
-    "COLLECTION_STORAGE_PATH": "../tests/testdata/user_collections",
-    "SQLALCHEMY_DATABASE_URI": "postgres://vocabulary_test:vocabulary_test@localhost/vocabulary_test"
+    "COLLECTION_STORAGE_PATH": "../tests/testdata/user_collections"
+    # 'DATABASE': db_path,
 }
-
 
 @pytest.fixture
 def app():
@@ -18,7 +22,8 @@ def app():
     app = create_app(TEST_CONFIG)
 
     with app.app_context():
-        init_db()
+        pass
+        # init_db()
         # get_db().executescript(_data_sql)
     pass
 

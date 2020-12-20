@@ -10,9 +10,8 @@ from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
 
 from vocabulary_mgr.storage import StorageManager
 from .database import get_db_session, init_db, init_app
+from .models import User, Role
 from vocabulary_mgr import VocabularyMgr
-
-from .database import db
 
 security = None
 
@@ -69,8 +68,6 @@ def create_app(test_config=None):
         SHARED_WORKBOOKS_METADATA="shared_collections_metadata.yml"
 
     )
-
-    db.init_app(app)
 
     # Ensure that the instance folder exists
     try:
