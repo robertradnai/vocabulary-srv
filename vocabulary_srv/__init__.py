@@ -87,6 +87,9 @@ def create_app(test_config=None):
     else:
         print(f"Configuration file at {config_path} isn't found, default configuration values are used.")
 
+    # Check if connection string and private key is defined
+    if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
+        raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
 
     with app.app_context():
         # Setup Flask-Security
