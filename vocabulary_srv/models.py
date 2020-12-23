@@ -3,7 +3,8 @@ from .database import db
 
 class WordCollections(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(80), nullable=False)
+    # The unique constraint stays until login and collection management is implemented
+    user_id = db.Column(db.String(80), nullable=False, unique=True)
     created_at = db.Column(db.String())
     last_modified_at = db.Column(db.DateTime())
     wc_object = db.Column(db.PickleType())

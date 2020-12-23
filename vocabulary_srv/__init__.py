@@ -23,8 +23,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         # Generate a nice key using secrets.token_urlsafe()
         SECRET_KEY=os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw'),
-        # store the database in the instance folder
-        DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
+        # store the database in the instance folder,
         DEBUG=True,
         # Bcrypt is set as default SECURITY_PASSWORD_HASH, which requires a salt
         # Generate a good salt using: secrets.SystemRandom().getrandbits(128)
@@ -71,8 +70,6 @@ def create_app(test_config=None):
 
     )
 
-    db.init_app(app)
-
     # Ensure that the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -103,6 +100,10 @@ def create_app(test_config=None):
         # CORS(app)  TODO remove or revise before publishing!
         # logging.getLogger('flask_cors').level = logging.DEBUG
 
+    # The db engine needs to know about the models
+    from . import models
+    db.init_app(app)
+
     from . import vocabulary
     app.register_blueprint(vocabulary.bp)
 
@@ -124,7 +125,7 @@ def create_app(test_config=None):
     def home():
         return jsonify({"email": render_template_string('{{email}}', email=current_user.email)})
 
-    init_app(app)
+    init_app(app) # Register database command for flask
 
     # apply the blueprints to the app
     #from vocabulary_srv import auth, blog
