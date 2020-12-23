@@ -21,7 +21,7 @@ class StorageManager(IWordCollectionsDao):
         raise Exception("Shelve object couldn't be accessed after several attempts in get_item!")
 
 
-    def put_item(self, element_id: str, item_to_store: object):
+    def create_item(self, element_id: str, item_to_store: object):
         with open(self._storage_path) as storage:
             storage[element_id] = item_to_store
 

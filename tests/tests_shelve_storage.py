@@ -13,7 +13,7 @@ def test_object_store():
     stored_obj = {"a": "AA", "b": "BB"}
 
     id = "first"
-    sm.put_item(id, stored_obj)
+    sm.create_item(id, stored_obj)
 
     assert sm.get_item(id) == stored_obj
 

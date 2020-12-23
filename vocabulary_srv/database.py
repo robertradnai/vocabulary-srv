@@ -65,23 +65,27 @@ def init_app(app):
 
 class DbWordCollectionStorage(IWordCollectionsDao):
 
-    def __init__(self):
-        from .models import WordCollections
-        self.WordCollections = WordCollections
-
     def get_item(self, element_id: str) -> object:
-        return self.WordCollections\
+        from .models import WordCollections
+        return WordCollections\
             .query.filter_by(user_id=element_id).first().wc_object
 
-
-    def put_item(self, element_id: str, item_to_store: object) -> str:
-
-        entry = self.WordCollections(user_id=element_id,
+    def create_item(self, element_id: str, item_to_store: object) -> None:
+        from .models import WordCollections
+        entry = WordCollections(user_id=element_id,
                                 created_at=datetime.now(),
                                 last_modified_at=datetime.now(),
                                 wc_object=item_to_store,
                                 collection_name="",
                                 collection_display_name="")
         db.session.add(entry)
+        db.session.commit()
+
+    def update_item(self, element_id: str, item_to_store: object) -> None:
+
+        from .models import WordCollections
+        entry: WordCollections = WordCollections \
+            .query.filter_by(user_id=element_id).first()
+        entry.wc_object = item_to_store
         db.session.commit()
 

@@ -83,7 +83,7 @@ def clone_shared(temp_user):
     for word_list in voc.get_word_sheet_list():
         voc.reset_progress(word_list)
 
-    get_storage_manager().put_item(temp_user, voc)
+    get_storage_manager().create_item(temp_user, voc)
 
     # Header: jwt
     # collection (, list)
@@ -106,10 +106,6 @@ def pick_question(temp_user):
     # Fetching a question and the learning progress
 
     quiz_list = voc.choice_quiz(list_name, pick_strategy)
-    # voc.get_progress(list_name)
-
-    # TODO is this necessary?
-    get_storage_manager().put_item(storage_id, voc)
 
     res_dict_list = []
 
@@ -151,7 +147,7 @@ def answer_question(temp_user):
     # Return learning progress for the word list
     learning_progress = voc.get_progress(list_name)
 
-    get_storage_manager().put_item(storage_id, voc)
+    get_storage_manager().update_item(storage_id, voc)
 
     res = {"learningProgress": learning_progress}
 
