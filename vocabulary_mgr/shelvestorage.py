@@ -2,10 +2,10 @@ from shelve import open
 from time import sleep
 from traceback import format_exception
 
-from vocabulary_mgr.persistence import AbsStorageManager
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
 
 
-class StorageManager(AbsStorageManager):
+class StorageManager(IWordCollectionsDao):
     def __init__(self, storage_path):
         self._storage_path = storage_path
 

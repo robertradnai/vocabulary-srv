@@ -9,7 +9,7 @@ from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
     Security, hash_password, current_user
 
 from vocabulary_mgr.shelvestorage import StorageManager
-from vocabulary_mgr.persistence import AbsStorageManager
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
 from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
 from vocabulary_mgr import VocabularyMgr
 
@@ -148,7 +148,7 @@ def get_vocabulary_manager() -> VocabularyMgr:
     return None
 
 
-def get_storage_manager() -> AbsStorageManager:
+def get_storage_manager() -> IWordCollectionsDao:
     if "storage_mgr" not in g:
         #g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
         #                                            current_app.config["COLLECTION_STORAGE_PATH"]))

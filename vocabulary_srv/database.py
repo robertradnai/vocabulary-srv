@@ -5,7 +5,7 @@ from flask import g, current_app
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 
-from vocabulary_mgr.persistence import AbsStorageManager
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -63,7 +63,7 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-class DbWordCollectionStorage(AbsStorageManager):
+class DbWordCollectionStorage(IWordCollectionsDao):
 
     def __init__(self):
         from .models import WordCollections

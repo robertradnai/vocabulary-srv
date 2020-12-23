@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class AbsStorageManager(ABC):
+class IWordCollectionsDao(ABC):
     @abstractmethod
     def get_item(self, element_id: str) -> object:
         pass
