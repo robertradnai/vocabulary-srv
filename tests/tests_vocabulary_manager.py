@@ -1,6 +1,6 @@
 import pytest
 
-from vocabulary_mgr.storage import StorageManager
+from vocabulary_mgr.shelvestorage import StorageManager
 from tests.utils import reset_test_env
 
 

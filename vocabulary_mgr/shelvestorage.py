@@ -1,9 +1,11 @@
-from shelve import DbfilenameShelf, open
+from shelve import open
 from time import sleep
 from traceback import format_exception
 
+from vocabulary_mgr.persistence import AbsStorageManager
 
-class StorageManager:
+
+class StorageManager(AbsStorageManager):
     def __init__(self, storage_path):
         self._storage_path = storage_path
 

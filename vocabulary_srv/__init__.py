@@ -8,8 +8,9 @@ from flask_cors import CORS
 from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
     Security, hash_password, current_user
 
-from vocabulary_mgr.storage import StorageManager
-from .database import get_db_session, init_db, init_app
+from vocabulary_mgr.shelvestorage import StorageManager
+from vocabulary_mgr.persistence import AbsStorageManager
+from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
 from vocabulary_mgr import VocabularyMgr
 
 from .database import db
@@ -147,8 +148,9 @@ def get_vocabulary_manager() -> VocabularyMgr:
     return None
 
 
-def get_storage_manager() -> StorageManager:
+def get_storage_manager() -> AbsStorageManager:
     if "storage_mgr" not in g:
-        g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
-                                                    current_app.config["COLLECTION_STORAGE_PATH"]))
+        #g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
+        #                                            current_app.config["COLLECTION_STORAGE_PATH"]))
+        g.storage_mgr = DbWordCollectionStorage()
     return g.storage_mgr
