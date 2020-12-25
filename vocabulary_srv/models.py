@@ -11,25 +11,16 @@ class RolesUsers(Base):
     user_id = Column('user_id', Integer(), ForeignKey('user.id'))
     role_id = Column('role_id', Integer(), ForeignKey('role.id'))
 
-class Role(Base, RoleMixin):
-    __tablename__ = 'role'
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(80), unique=True)
-    description = Column(String(255))
+class WordCollections(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # The unique constraint stays until login and collection management is implemented
+    user_id = db.Column(db.String(80), nullable=False, unique=True)
+    created_at = db.Column(db.String())
+    last_modified_at = db.Column(db.DateTime())
+    wc_object = db.Column(db.PickleType())
+    collection_name = db.Column(db.String())
+    collection_display_name = db.Column(db.String())
 
-class User(Base, UserMixin):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True)
-    email = Column(String(255), unique=True)
-    username = Column(String(255))
-    password = Column(String(255))
-    last_login_at = Column(DateTime())
-    current_login_at = Column(DateTime())
-    last_login_ip = Column(String(100))
-    current_login_ip = Column(String(100))
-    login_count = Column(Integer)
-    active = Column(Boolean())
-    fs_uniquifier = Column(String(255))
-    confirmed_at = Column(DateTime())
-    roles = relationship('Role', secondary='roles_users',
-                         backref=backref('users', lazy='dynamic'))
+    def __repr__(self):
+        return f"<User id={self.id}, user_id={self.username}, created_at={self.created_at}, last_modified_at={self.last_modified_at}>"
+ 

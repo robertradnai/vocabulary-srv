@@ -8,21 +8,6 @@ from typing import List
 from yaml import load, Loader
 
 
-class IStorageManager(ABC):
-    @abstractmethod
-    def get_item(self, element_id: str):
-        pass
-
-    @abstractmethod
-    def put_item(self, element_id: str, item_to_store: object):
-        pass
-
-    @abstractmethod
-    def delete_item(self, element_id: str):
-        pass
-
-
-
 class WordListsElement:
     def __init__(self, word_collection_name: str, word_list_name: str,
                  word_collection_display_name: str, word_list_display_name: str):

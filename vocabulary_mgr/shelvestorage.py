@@ -1,9 +1,11 @@
-from shelve import DbfilenameShelf, open
+from shelve import open
 from time import sleep
 from traceback import format_exception
 
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
 
-class StorageManager:
+
+class StorageManager(IWordCollectionsDao):
     def __init__(self, storage_path):
         self._storage_path = storage_path
 
@@ -19,7 +21,7 @@ class StorageManager:
         raise Exception("Shelve object couldn't be accessed after several attempts in get_item!")
 
 
-    def put_item(self, element_id: str, item_to_store: object):
+    def create_item(self, element_id: str, item_to_store: object):
         with open(self._storage_path) as storage:
             storage[element_id] = item_to_store
 
