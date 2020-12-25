@@ -113,7 +113,7 @@ def create_app(test_config=None):
 
     @app.route("/hello")
     def hello():
-        return jsonify({"hello": "world"})
+        return jsonify({"build": "2020-12-25 test"})
 
     # Create a user to test with
     # @app.before_first_request
