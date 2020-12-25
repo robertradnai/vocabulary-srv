@@ -111,7 +111,7 @@ def create_app(test_config=None):
     app.register_blueprint(vocabulary.bp)
 
 
-    @app.route("/hello")
+    @app.route("/api/hello")
     def hello():
         return jsonify({"build": "2020-12-25 test"})
 
