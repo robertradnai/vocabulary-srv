@@ -13,6 +13,8 @@ from vocabulary_mgr.dataaccess import IWordCollectionsDao
 from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
 from vocabulary_mgr import VocabularyMgr
 
+from .database import db
+
 security = None
 
 def create_app(test_config=None):
