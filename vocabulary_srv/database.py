@@ -1,8 +1,9 @@
 from datetime import datetime
 
 import click
-from flask import g, current_app
+from flask import g
 from flask.cli import with_appcontext
+
 from flask_sqlalchemy import SQLAlchemy
 
 from vocabulary_mgr.dataaccess import IWordCollectionsDao
@@ -39,10 +40,7 @@ def init_db():
     # you will have to import them first before calling init_db()
 
     #db = get_db_session()
-    db.drop_all()
-    db.create_all()
-
-    # Base.metadata.drop_all(engine)
+    Base.metadata.drop_all(engine)
     #with current_app.open_resource("schema.sql") as f:
         #db.executescript(f.read().decode("utf8"))
 
