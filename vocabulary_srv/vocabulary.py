@@ -59,9 +59,9 @@ def register_guest():
     }
 
     encoded_jwt = jwt.encode(jwt_body, current_app.config["SECRET_KEY"], algorithm='HS256')
-    print(f"JWT token created: {encoded_jwt.decode()}")
+    print(f"JWT token created: {encoded_jwt}")
     res = {
-        "guestJwt": encoded_jwt.decode(),
+        "guestJwt": encoded_jwt,
         "guestJwtBody": jwt_body
     }
     return jsonify(res)
