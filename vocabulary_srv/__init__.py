@@ -8,8 +8,9 @@ from flask_cors import CORS
 from flask_security import auth_required, SQLAlchemySessionUserDatastore, \
     Security, hash_password, current_user
 
-from vocabulary_mgr.storage import StorageManager
-from .database import get_db_session, init_db, init_app
+from vocabulary_mgr.shelvestorage import StorageManager
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
+from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
 from vocabulary_mgr import VocabularyMgr
 
 from .database import db
@@ -22,8 +23,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         # Generate a nice key using secrets.token_urlsafe()
         SECRET_KEY=os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw'),
-        # store the database in the instance folder
-        DATABASE=os.path.join(app.instance_path, "flaskr.sqlite"),
+        # store the database in the instance folder,
         DEBUG=True,
         # Bcrypt is set as default SECURITY_PASSWORD_HASH, which requires a salt
         # Generate a good salt using: secrets.SystemRandom().getrandbits(128)
@@ -70,8 +70,6 @@ def create_app(test_config=None):
 
     )
 
-    db.init_app(app)
-
     # Ensure that the instance folder exists
     try:
         os.makedirs(app.instance_path)
@@ -89,6 +87,9 @@ def create_app(test_config=None):
     else:
         print(f"Configuration file at {config_path} isn't found, default configuration values are used.")
 
+    # Check if connection string and private key is defined
+    if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
+        raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
 
     with app.app_context():
         # Setup Flask-Security
@@ -102,13 +103,17 @@ def create_app(test_config=None):
         # CORS(app)  TODO remove or revise before publishing!
         # logging.getLogger('flask_cors').level = logging.DEBUG
 
+    # The db engine needs to know about the models
+    from . import models
+    db.init_app(app)
+
     from . import vocabulary
     app.register_blueprint(vocabulary.bp)
 
 
-    @app.route("/hello")
+    @app.route("/api/hello")
     def hello():
-        return jsonify({"hello": "world"})
+        return jsonify({"build": "2020-12-25 test"})
 
     # Create a user to test with
     # @app.before_first_request
@@ -123,7 +128,7 @@ def create_app(test_config=None):
     def home():
         return jsonify({"email": render_template_string('{{email}}', email=current_user.email)})
 
-    init_app(app)
+    init_app(app) # Register database command for flask
 
     # apply the blueprints to the app
     #from vocabulary_srv import auth, blog
@@ -147,8 +152,9 @@ def get_vocabulary_manager() -> VocabularyMgr:
     return None
 
 
-def get_storage_manager() -> StorageManager:
+def get_storage_manager() -> IWordCollectionsDao:
     if "storage_mgr" not in g:
-        g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
-                                                    current_app.config["COLLECTION_STORAGE_PATH"]))
+        #g.storage_mgr = StorageManager(os.path.join(current_app.instance_path,
+        #                                            current_app.config["COLLECTION_STORAGE_PATH"]))
+        g.storage_mgr = DbWordCollectionStorage()
     return g.storage_mgr

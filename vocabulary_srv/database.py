@@ -1,25 +1,13 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
+
 import click
 from flask import g, current_app
 from flask.cli import with_appcontext
-
-engine = create_engine('sqlite:////tmp/test.db',
-                       convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
-Base = declarative_base()
-
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
 
-def get_db():
-    if "db" not in g:
-        g.db = SQLAlchemy(current_app)
-        return g.db
+from vocabulary_mgr.dataaccess import IWordCollectionsDao
 
+db: SQLAlchemy = SQLAlchemy()
 
 
 def get_db_session():
@@ -29,12 +17,8 @@ def get_db_session():
     """
 
     if "db_session" not in g:
-        Base.query = db_session.query_property()
-        Base.metadata.create_all(bind=engine)
-        g.db_session = scoped_session(sessionmaker(autocommit=False,
-                                                 autoflush=False,
-                                                 bind=engine))
-    return db_session
+        pass
+    return None
 
 
 def close_db(e=None):
@@ -53,8 +37,6 @@ def init_db():
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
-    from . import models
-
 
     #db = get_db_session()
     db.drop_all()
@@ -79,3 +61,31 @@ def init_app(app):
     """
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+
+class DbWordCollectionStorage(IWordCollectionsDao):
+
+    def get_item(self, element_id: str) -> object:
+        from .models import WordCollections
+        return WordCollections\
+            .query.filter_by(user_id=element_id).first().wc_object
+
+    def create_item(self, element_id: str, item_to_store: object) -> None:
+        from .models import WordCollections
+        entry = WordCollections(user_id=element_id,
+                                created_at=datetime.now(),
+                                last_modified_at=datetime.now(),
+                                wc_object=item_to_store,
+                                collection_name="",
+                                collection_display_name="")
+        db.session.add(entry)
+        db.session.commit()
+
+    def update_item(self, element_id: str, item_to_store: object) -> None:
+
+        from .models import WordCollections
+        entry: WordCollections = WordCollections \
+            .query.filter_by(user_id=element_id).first()
+        entry.wc_object = item_to_store
+        db.session.commit()
+

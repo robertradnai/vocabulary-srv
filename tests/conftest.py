@@ -6,7 +6,6 @@ TEST_CONFIG: dict = {
     'TESTING': True,
     'SHARED_WORKBOOKS_PATH': "../tests/testdata/shared_collections",
     "SHARED_WORKBOOKS_METADATA": "../tests/testdata/shared_collections_metadata.yml",
-    "COLLECTION_STORAGE_PATH": "../tests/testdata/user_collections",
     "SQLALCHEMY_DATABASE_URI": "postgres://vocabulary_test:vocabulary_test@localhost/vocabulary_test"
 }
 
