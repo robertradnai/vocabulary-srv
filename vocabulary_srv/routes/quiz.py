@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
-from . import get_storage_manager
+from vocabulary_srv import get_storage_manager
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/api/vocabulary')
 
