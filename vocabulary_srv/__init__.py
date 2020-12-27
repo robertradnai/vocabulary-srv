@@ -15,7 +15,26 @@ from vocabulary_mgr import VocabularyMgr
 
 from .database import db
 
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
 security = None
+
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
@@ -92,16 +111,8 @@ def create_app(test_config=None):
         raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
 
     with app.app_context():
-        # Setup Flask-Security
-        # In your app
-        # Enable CSRF on all api endpoints.
-        # flask_wtf.CSRFProtect(app)
-        # user_datastore = SQLAlchemySessionUserDatastore(get_db_session(), User, Role)
         user_datastore = None
         global security
-        # security = Security(app, user_datastore)
-        # CORS(app)  TODO remove or revise before publishing!
-        # logging.getLogger('flask_cors').level = logging.DEBUG
 
     # The db engine needs to know about the models
     from . import models

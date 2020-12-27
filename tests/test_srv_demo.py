@@ -48,3 +48,8 @@ def test_demo_quiz(client):
     # Verify if a few correct answers had an effect on the learning progress
     learning_progress = r_submit_answer.json['learningProgress']
     assert learning_progress > 0
+
+
+def test_raise_error(client):
+    r_error: Response = client.get('/api/vocabulary/test/raise')
+    # TODO add assertion
