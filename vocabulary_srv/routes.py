@@ -1,24 +1,23 @@
 import functools
-from random import randint
-
+import os
 import jwt
-from flask import Blueprint, jsonify, request, current_app, Response
-from vocabulary.models import Question
-from vocabulary.stateless import Vocabulary
-from vocabulary.dataaccess import load_wordlist_book
-from pdb import set_trace
 
+from random import randint
+from flask import Blueprint, jsonify, request, current_app, Response
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 
+from vocabulary.dataaccess import load_wordlist_book
+from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
 from . import get_storage_manager
-import os
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/api/vocabulary')
 
 
 def guest_auth_required(view):
+    """When the user uses the demo, a (guest) JWT identifies the user so that their progress
+    can be saved on the server. This is the authentication based on this guest JWT"""
     @functools.wraps(view)
     def wrapped_view(**kwargs):
 

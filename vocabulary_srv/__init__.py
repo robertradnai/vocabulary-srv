@@ -68,8 +68,8 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # Routes for the application
-    from . import vocabulary
-    app.register_blueprint(vocabulary.bp)
+    from . import routes
+    app.register_blueprint(routes.bp)
 
     # Version information for testing the deployment system
     @app.route("/api/hello")
