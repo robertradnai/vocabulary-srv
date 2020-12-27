@@ -12,7 +12,7 @@ from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
 from vocabulary_srv import get_storage_manager
 
-bp = Blueprint('vocabulary', __name__, url_prefix='/api/vocabulary')
+bp = Blueprint('vocabulary', __name__, url_prefix='/')
 
 
 def guest_auth_required(view):

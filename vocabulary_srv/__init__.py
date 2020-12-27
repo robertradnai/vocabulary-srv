@@ -62,6 +62,7 @@ def create_app(test_config=None):
     # Check if connection string is defined
     if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
         raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
+        # TODO change to sys.exit or similar
 
     # The db engine needs to know about the models
     from . import models
@@ -72,7 +73,7 @@ def create_app(test_config=None):
     app.register_blueprint(quiz.bp)
 
     # Version information for testing the deployment system
-    @app.route("/api/vocabulary/hello")
+    @app.route("/hello")
     def hello():
         return jsonify({"build": "2020-12-25 test"})
 
