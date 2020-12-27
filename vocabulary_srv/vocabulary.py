@@ -12,7 +12,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
-from . import get_vocabulary_manager, get_storage_manager
+from . import get_storage_manager
 import os
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/api/vocabulary')
