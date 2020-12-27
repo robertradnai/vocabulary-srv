@@ -72,7 +72,7 @@ def create_app(test_config=None):
     app.register_blueprint(quiz.bp)
 
     # Version information for testing the deployment system
-    @app.route("/api/hello")
+    @app.route("/api/vocabulary/hello")
     def hello():
         return jsonify({"build": "2020-12-25 test"})
 
