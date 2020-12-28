@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import click
-from flask import g, current_app
+from flask import g
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 

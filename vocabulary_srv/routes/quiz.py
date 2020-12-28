@@ -1,33 +1,33 @@
 import functools
-from random import randint
-
+import os
 import jwt
-from flask import Blueprint, jsonify, request, current_app, Response
-from vocabulary.models import Question
-from vocabulary.stateless import Vocabulary
-from vocabulary.dataaccess import load_wordlist_book
-from pdb import set_trace
 
+from random import randint
+from flask import Blueprint, jsonify, request, current_app, Response
+from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 
+from vocabulary.dataaccess import load_wordlist_book
+from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
-from . import get_vocabulary_manager, get_storage_manager
-import os
+from vocabulary_srv import get_storage_manager
 
-bp = Blueprint('vocabulary', __name__, url_prefix='/api/vocabulary')
+bp = Blueprint('vocabulary', __name__, url_prefix='/')
 
 
 def guest_auth_required(view):
+    """When the user uses the demo, a (guest) JWT identifies the user so that their progress
+    can be saved on the server. This is the authentication based on this guest JWT"""
     @functools.wraps(view)
     def wrapped_view(**kwargs):
 
         guest_jwt = request.headers["Guest-Authentication-Token"]
-        print(f"Validating received guest-JWT: {guest_jwt}")
+        current_app.logger.debug(f"Validating received guest-JWT: {guest_jwt}")
         decoded_body = jwt.decode(guest_jwt, current_app.config["SECRET_KEY"], algorithms=['HS256'])
         user_id = decoded_body["guestUserId"]
         kwargs["temp_user"] = user_id
 
-        print(f"Request received from ID {user_id}")
+        current_app.logger.debug(f"Request received from ID {user_id}")
 
         return view(**kwargs)
 
@@ -59,7 +59,7 @@ def register_guest():
     }
 
     encoded_jwt = jwt.encode(jwt_body, current_app.config["SECRET_KEY"], algorithm='HS256')
-    print(f"JWT token created: {encoded_jwt}")
+    current_app.logger.debug(f"JWT token created: {encoded_jwt}")
     res = {
         "guestJwt": encoded_jwt,
         "guestJwtBody": jwt_body
@@ -152,3 +152,19 @@ def answer_question(temp_user):
     res = {"learningProgress": learning_progress}
 
     return jsonify(res)
+
+
+@bp.route('/test/raise', methods=('GET',))
+def throw_error():
+    raise Exception("This is an intentionally raised test exception.")
+
+
+@bp.errorhandler(Exception)
+def handle_exception(e: Exception):
+    # Pass through HTTP errors
+    if isinstance(e, HTTPException):
+        return e
+
+    current_app.logger.exception(f"Error while handling request {request.url}")
+    # Handle non-HTTP errors
+    return Response(status=500)
