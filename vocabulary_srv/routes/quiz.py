@@ -1,16 +1,20 @@
 import functools
 import os
+from pdb import set_trace
+
 import jwt
 
 from random import randint
 from flask import Blueprint, jsonify, request, current_app, Response
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
+from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
 from vocabulary_srv import get_storage_manager
+from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
 
@@ -152,6 +156,28 @@ def answer_question(temp_user):
     res = {"learningProgress": learning_progress}
 
     return jsonify(res)
+
+
+@bp.route("/feedback-or-subscribe", methods=('POST',))
+def feedback_subscribe():
+    form = FeedbackForm(request.form)
+    if not form.validate():
+        return Response(status=400)
+    else:
+        FeedbackStorage.insert(name=form.name.data,
+                               email=form.email.data,
+                               is_subscribe=form.is_subscribe.data,
+                               subject=form.subject.data,
+                               message=form.message.data)
+        return Response(status=200)
+
+
+class FeedbackForm(Form):
+    name = StringField('name', [validators.Length(min=1, max=120)])
+    email = StringField('email', [validators.email()])
+    is_subscribe = BooleanField('is_subscribe')
+    subject = StringField('subject', [validators.Length(min=0, max=1200)])
+    message = StringField('message', [validators.Length(min=0, max=1200)])
 
 
 @bp.route('/test/raise', methods=('GET',))

@@ -13,3 +13,12 @@ class WordCollections(db.Model):
 
     def __repr__(self):
         return f"<User id={self.id}, user_id={self.username}, created_at={self.created_at}, last_modified_at={self.last_modified_at}>"
+
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String())
+    email = db.Column(db.String())
+    is_subscribe = db.Column(db.Boolean())
+    subject = db.Column(db.String())
+    message = db.Column(db.String())

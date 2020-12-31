@@ -1,4 +1,5 @@
 from vocabulary_srv import create_app
+from vocabulary_srv.database import FeedbackStorage
 from pdb import set_trace
 from flask.wrappers import Response
 
@@ -53,3 +54,26 @@ def test_demo_quiz(client):
 def test_raise_error(client):
     r_error: Response = client.get('/test/raise')
     # TODO add assertion
+
+
+def test_feedback_subscribe(app):
+    # See https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
+    # for parameters
+
+    with app.app_context():
+        assert FeedbackStorage.get_count() == 0  # No entries in the table
+
+    form_data = {"name": "Aladar", "email":"aladar@example.com", "is_subscribe": True,
+                 "subject": "some subject", "message": "some message"}
+    r_feedback: Response = app.test_client().post("/feedback-or-subscribe", data=form_data)
+
+    form_data_bad_email = {"name": "Aladar", "email":"invalid email", "is_subscribe": True,
+                 "subject": "some subject", "message": "some message"}
+
+    r_bad_email: Response = app.test_client().post("/feedback-or-subscribe", data=form_data_bad_email)
+
+    assert r_feedback.status_code == 200
+    assert r_bad_email.status_code == 400
+
+    with app.app_context():
+        assert FeedbackStorage.get_count() == 1  # Exactly one entry in the table

@@ -89,3 +89,20 @@ class DbWordCollectionStorage(IWordCollectionsDao):
         entry.wc_object = item_to_store
         db.session.commit()
 
+
+class FeedbackStorage:
+    @staticmethod
+    def insert(name, email, is_subscribe, subject, message):
+        from .models import Feedback
+        entry = Feedback(name=name,
+                         email=email,
+                         is_subscribe=is_subscribe,
+                         subject=subject,
+                         message=message)
+        db.session.add(entry)
+        db.session.commit()
+
+    @staticmethod
+    def get_count():
+        from .models import Feedback
+        return db.session.query(Feedback.name).count()
