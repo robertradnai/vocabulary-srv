@@ -95,6 +95,7 @@ class FeedbackStorage:
     def insert(name, email, is_subscribe, subject, message):
         from .models import Feedback
         entry = Feedback(name=name,
+                         submitted_at = datetime.now(),
                          email=email,
                          is_subscribe=is_subscribe,
                          subject=subject,

@@ -17,6 +17,7 @@ class WordCollections(db.Model):
 
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    submitted_at = db.Column(db.DateTime)
     name = db.Column(db.String())
     email = db.Column(db.String())
     is_subscribe = db.Column(db.Boolean())
