@@ -26,43 +26,51 @@ dictConfig({
 security = None
 
 
-def create_app(test_config=None):
+def create_app(test_config=None, config_filename=None):
     """Create and configure an instance of the Flask application."""
+
+
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        # Generate a nice key using secrets.token_urlsafe()
-        SECRET_KEY=os.environ.get("SECRET_KEY", 'pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw'),
-        # store the database in the instance folder,
-        DEBUG=True,
-        # Bcrypt is set as default SECURITY_PASSWORD_HASH, which requires a salt
-        # Generate a good salt using: secrets.SystemRandom().getrandbits(128)
-
         SHARED_WORKBOOKS_PATH="shared_collections",
-        SHARED_WORKBOOKS_METADATA="shared_collections_metadata.yml"
-
+        SHARED_WORKBOOKS_METADATA="shared_collections_metadata.yml",
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
+
+    # Loading configuration
+    # Test config has a priority over the configuration file
+    # In order to enable easy tweaking of app configuration
+    # From the command line
+    if config_filename is not None:
+        config_path=os.path.join(app.instance_path, config_filename)
+        if os.path.isfile(config_path):
+            app.config.from_pyfile(config_path)
+            print(f"Loaded configuration from {config_path}.")
+        else:
+            raise Exception(f"Configuration file at {config_path} is missing or access isn't granted, terminating...")
+    else:
+        print(f"No configuration file was provided.")
+
+    if test_config is not None:
+        app.config.from_mapping(test_config)
+        print("Loaded test configuration.")
+
+    # Check if connection string is defined
+    if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
+        raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
+        # TODO change to sys.exit or similar
+
+    if app.config.get("SECRET_KEY") is None and app.debug:
+        app.config["SECRET_KEY"] = os.urandom(24)
+        print("Debug mode detected, generating secret key...")
+    else:
+        raise Exception("Secret key isn't found in the provided configuration for production app!")
 
     # Ensure that the instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    # Loading configuration
-    config_path=os.path.join(app.instance_path, "config.py")
-    if test_config is not None:
-        app.config.from_mapping(test_config)
-        print("Loaded test configuration.")
-    elif os.path.isfile(config_path):
-        app.config.from_pyfile(config_path)
-        print(f"Loaded configuration from {config_path}.")
-    else:
-        print(f"Configuration file at {config_path} isn't found, default configuration values are used.")
-
-    # Check if connection string is defined
-    if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
-        raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
-        # TODO change to sys.exit or similar
 
     # The db engine needs to know about the models
     from . import models
