@@ -45,26 +45,30 @@ def create_app(test_config=None, config_filename=None):
         config_path=os.path.join(app.instance_path, config_filename)
         if os.path.isfile(config_path):
             app.config.from_pyfile(config_path)
-            print(f"Loaded configuration from {config_path}.")
+            app.logger.debug(f"Loaded configuration from {config_path}.")
         else:
             raise Exception(f"Configuration file at {config_path} is missing or access isn't granted, terminating...")
     else:
-        print(f"No configuration file was provided.")
+        app.logger.debug(f"No configuration file was provided.")
 
     if test_config is not None:
         app.config.from_mapping(test_config)
-        print("Loaded test configuration.")
+        app.logger.debug("Loaded test configuration.")
 
     # Check if connection string is defined
     if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
-        raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
-        # TODO change to sys.exit or similar
+        exc_msg = "SQLALCHEMY_DATABASE_URI is not set, terminating app..."
+        app.logger.debug(exc_msg) # Gunicorn doesn't print exception message, so I print it here additionally
+        raise Exception(exc_msg)
 
-    if app.config.get("SECRET_KEY") is None and (app.debug or app.testing):
+    if app.config.get("SECRET_KEY") is None and (app.testing):
         app.config["SECRET_KEY"] = os.urandom(24)
-        print("Debug or test mode detected, generating secret key...")
-    else:
-        raise Exception("Secret key isn't found in the provided configuration for production app!")
+        app.logger.debug("Debug or test mode detected, generating secret key...")
+
+    if app.config.get("SECRET_KEY") is None and not (app.debug or app.testing):
+        exc_msg = "Secret key isn't found in the provided configuration for production app!"
+        app.logger.debug(exc_msg)
+        raise Exception(exc_msg)
 
     # Ensure that the instance folder exists
     try:
