@@ -60,9 +60,9 @@ def create_app(test_config=None, config_filename=None):
         raise Exception("SQLALCHEMY_DATABASE_URI is not set, terminating app...")
         # TODO change to sys.exit or similar
 
-    if app.config.get("SECRET_KEY") is None and app.debug:
+    if app.config.get("SECRET_KEY") is None and (app.debug or app.testing):
         app.config["SECRET_KEY"] = os.urandom(24)
-        print("Debug mode detected, generating secret key...")
+        print("Debug or test mode detected, generating secret key...")
     else:
         raise Exception("Secret key isn't found in the provided configuration for production app!")
 

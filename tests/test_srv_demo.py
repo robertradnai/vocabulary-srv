@@ -8,7 +8,7 @@ TEST_LIST_NAME = "shorttest"
 
 
 def test_config():
-    assert not create_app({"SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
+    # assert not create_app({"SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
     assert create_app({'TESTING': True, "SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
 
 
