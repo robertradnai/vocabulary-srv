@@ -38,6 +38,8 @@ def test_demo_quiz(client):
         assert 'directives' in quiz
         assert 'question' in quiz
         assert 'flashcard' in quiz
+        assert "lang1_name" in quiz["directives"]
+        assert "lang2_name" in quiz["directives"]
 
     answers = {2: True, 3: True, 4: True}
 

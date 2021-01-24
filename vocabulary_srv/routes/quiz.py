@@ -110,12 +110,13 @@ def pick_question(temp_user):
     # Fetching a question and the learning progress
 
     quiz_list = voc.choice_quiz(list_name, pick_strategy)
-
     res_dict_list = []
 
     for quiz in quiz_list:
-
-        question_options = quiz.question.options if quiz.question is not None else None
+        extended_directives: dict = {}
+        extended_directives.update(quiz.directives)
+        extended_directives.update({"lang1_name": voc.word_collection.word_lists[list_name].lang1,
+                                    "lang2_name": voc.word_collection.word_lists[list_name].lang2})
 
         res = {
             "question": {
@@ -123,7 +124,7 @@ def pick_question(temp_user):
                 "rowKey": quiz.question.row_key if quiz.question is not None else None,
                 "text": quiz.question.text if quiz.question is not None else None
             },
-            "directives": quiz.directives,
+            "directives": extended_directives,
             "flashcard": {
                 "lang1": quiz.flashcard.lang1,
                 "lang2": quiz.flashcard.lang2,
