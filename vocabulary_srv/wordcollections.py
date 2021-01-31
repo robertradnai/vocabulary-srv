@@ -40,8 +40,3 @@ def show_shared_collections(shared_collections_metadata: str):
 def get_storage_element_id(user_id, collection_name, list_name) -> str:
     return user_id
 
-
-def get_shared_collection_names() -> List[str]:
-    pass
-
-# TODO using slugs or real names?????

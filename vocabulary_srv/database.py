@@ -5,7 +5,7 @@ from flask import g
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 
-from vocabulary_mgr.dataaccess import IWordCollectionsDao
+from vocabulary_srv.dataaccess import IWordCollectionsDao
 
 db: SQLAlchemy = SQLAlchemy()
 

@@ -1,10 +1,6 @@
 import functools
 import os
-from pdb import set_trace
 
-import jwt
-
-from random import randint
 from flask import Blueprint, jsonify, request, current_app, Response
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
@@ -12,9 +8,9 @@ from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
-from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
+from vocabulary_srv.wordcollections import get_storage_element_id, show_shared_collections
 from vocabulary_srv import get_word_collection_storage
-from vocabulary_srv.user import GuestUser, GuestUserFactory
+from vocabulary_srv.user import GuestUserFactory
 from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
@@ -70,16 +66,21 @@ def get_shared_lists():
 
 @bp.route("/clone-word-list", methods=('POST',))
 @inject_guest_user_id
-def clone_shared(guest_user_id):
+def clone_shared(guest_user_id: str):
+
+    """
+        Validate the path of the word collection, then load it into the DB.
+    """
 
     collection_name = secure_filename(request.args['wordCollection'])
+    workbook_path = os.path.join(current_app.instance_path,
+                                 current_app.config["SHARED_WORKBOOKS_PATH"],
+                                 collection_name)
+    if not os.path.exists(workbook_path):
+        return Response(status=400)
 
-    # Find the shared collection among the file
     voc = Vocabulary()
-    voc.load(os.path.join(current_app.instance_path,
-                          current_app.config["SHARED_WORKBOOKS_PATH"],
-                          collection_name),
-             load_wordlist_book)
+    voc.load(workbook_path, load_wordlist_book)
 
     for word_list in voc.get_word_sheet_list():
         voc.reset_progress(word_list)
@@ -138,15 +139,15 @@ def answer_question(guest_user_id):
     answers = request.json["answers"]
 
 
-    storage_id = get_storage_element_id(guest_user_id, collection_name, list_name)
-    voc: Vocabulary = get_word_collection_storage().get_item(storage_id)
+    stored_collection_id = get_storage_element_id(guest_user_id, collection_name, list_name)
+    voc: Vocabulary = get_word_collection_storage().get_item(stored_collection_id)
     for row_key, is_correct in answers.items():
         voc.update_progress(list_name, int(row_key), is_correct)
 
     # Return learning progress for the word list
     learning_progress = voc.get_progress(list_name)
 
-    get_word_collection_storage().update_item(storage_id, voc)
+    get_word_collection_storage().update_item(stored_collection_id, voc)
 
     res = {"learningProgress": learning_progress}
 

@@ -3,7 +3,7 @@ from logging.config import dictConfig
 
 from flask import Flask, jsonify, g
 
-from vocabulary_mgr.dataaccess import IWordCollectionsDao
+from vocabulary_srv.dataaccess import IWordCollectionsDao
 from .database import db
 from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
 
