@@ -12,19 +12,10 @@ TEST_CONFIG: dict = {
 
 @pytest.fixture
 def app():
-    # db_fd, db_path = tempfile.mkstemp()
-
     app = create_app(TEST_CONFIG)
-
     with app.app_context():
         init_db()
-        # get_db().executescript(_data_sql)
-    pass
-
     yield app
-
-    # os.close(db_fd)
-    # os.unlink(db_path)
 
 
 @pytest.fixture

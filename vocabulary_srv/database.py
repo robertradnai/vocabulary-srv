@@ -5,21 +5,9 @@ from flask import g
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
 
-from vocabulary_mgr.dataaccess import IWordCollectionsDao
+from vocabulary_srv.dataaccess import IWordCollectionsDao
 
 db: SQLAlchemy = SQLAlchemy()
-
-
-def get_db_session():
-    """Connect to the application's configured database. The connection
-    is unique for each request and will be reused if this is called
-    again.
-    """
-
-    if "db_session" not in g:
-        pass
-    return None
-
 
 def close_db(e=None):
     """If this request connected to the database, close the
@@ -38,14 +26,8 @@ def init_db():
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
 
-    #db = get_db_session()
     db.drop_all()
     db.create_all()
-
-    # Base.metadata.drop_all(engine)
-    #with current_app.open_resource("schema.sql") as f:
-        #db.executescript(f.read().decode("utf8"))
-
 
 @click.command("init-db")
 @with_appcontext
@@ -89,3 +71,21 @@ class DbWordCollectionStorage(IWordCollectionsDao):
         entry.wc_object = item_to_store
         db.session.commit()
 
+
+class FeedbackStorage:
+    @staticmethod
+    def insert(name, email, is_subscribe, subject, message):
+        from .models import Feedback
+        entry = Feedback(name=name,
+                         submitted_at = datetime.now(),
+                         email=email,
+                         is_subscribe=is_subscribe,
+                         subject=subject,
+                         message=message)
+        db.session.add(entry)
+        db.session.commit()
+
+    @staticmethod
+    def get_count():
+        from .models import Feedback
+        return db.session.query(Feedback.name).count()
