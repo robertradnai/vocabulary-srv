@@ -1,6 +1,5 @@
 from vocabulary_srv import create_app
 from vocabulary_srv.database import FeedbackStorage
-from pdb import set_trace
 from flask.wrappers import Response
 
 TEST_COLLECTION_NAME = "testdict.xlsx"
@@ -8,7 +7,6 @@ TEST_LIST_NAME = "shorttest"
 
 
 def test_config():
-    # assert not create_app({"SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
     assert create_app({'TESTING': True, "SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
 
 
@@ -54,7 +52,7 @@ def test_demo_quiz(client):
 
 
 def test_raise_error(client):
-    r_error: Response = client.get('/test/raise')
+    client.get('/test/raise')
     # TODO add assertion
 
 

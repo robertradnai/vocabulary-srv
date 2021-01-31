@@ -5,7 +5,7 @@ from flask import Flask, jsonify, g
 
 from vocabulary_srv.dataaccess import IWordCollectionsDao
 from .database import db
-from .database import get_db_session, init_db, init_app, DbWordCollectionStorage
+from .database import init_db, init_app, DbWordCollectionStorage
 
 dictConfig({
     'version': 1,
@@ -47,7 +47,7 @@ def create_app(test_config=None, config_filename=None):
             app.config.from_pyfile(config_path)
             app.logger.debug(f"Loaded configuration from {config_path}.")
         else:
-            raise Exception(f"Configuration file at {config_path} is missing or access isn't granted, terminating...")
+            raise FileNotFoundError(f"Configuration file at {config_path} is missing or access isn't granted, terminating...")
     else:
         app.logger.debug(f"No configuration file was provided.")
 
@@ -59,7 +59,7 @@ def create_app(test_config=None, config_filename=None):
     if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
         exc_msg = "SQLALCHEMY_DATABASE_URI is not set, terminating app..."
         app.logger.debug(exc_msg) # Gunicorn doesn't print exception message, so I print it here additionally
-        raise Exception(exc_msg)
+        raise ValueError(exc_msg)
 
     if app.config.get("SECRET_KEY") is None and (app.testing):
         app.config["SECRET_KEY"] = os.urandom(24)
@@ -68,7 +68,7 @@ def create_app(test_config=None, config_filename=None):
     if app.config.get("SECRET_KEY") is None and not (app.debug or app.testing):
         exc_msg = "Secret key isn't found in the provided configuration for production app!"
         app.logger.debug(exc_msg)
-        raise Exception(exc_msg)
+        raise ValueError(exc_msg)
 
     # Ensure that the instance folder exists
     try:

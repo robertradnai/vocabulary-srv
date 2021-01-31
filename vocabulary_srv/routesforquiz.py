@@ -178,7 +178,7 @@ class FeedbackForm(Form):
 
 @bp.route('/test/raise', methods=('GET',))
 def throw_error():
-    raise Exception("This is an intentionally raised test exception.")
+    raise RuntimeError("This is an intentionally raised test exception.")
 
 
 @bp.errorhandler(Exception)
