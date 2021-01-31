@@ -81,8 +81,8 @@ def create_app(test_config=None, config_filename=None):
     db.init_app(app)
 
     # Routes for the application
-    from .routes import quiz
-    app.register_blueprint(quiz.bp)
+    from . import routesforquiz
+    app.register_blueprint(routesforquiz.bp)
 
     # Version information for testing the deployment system
     @app.route("/hello")
@@ -94,7 +94,7 @@ def create_app(test_config=None, config_filename=None):
     return app
 
 
-def get_storage_manager() -> IWordCollectionsDao:
+def get_word_collection_storage() -> IWordCollectionsDao:
     if "storage_mgr" not in g:
         g.storage_mgr = DbWordCollectionStorage()
     return g.storage_mgr

@@ -13,29 +13,43 @@ from wtforms import Form, StringField, BooleanField, validators
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
 from vocabulary_mgr.wordcollectionscontroller import get_storage_element_id, show_shared_collections
-from vocabulary_srv import get_storage_manager
+from vocabulary_srv import get_word_collection_storage
+from vocabulary_srv.user import GuestUser, GuestUserFactory
 from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
 
 
-def guest_auth_required(view):
+def inject_guest_user_id(view):
     """When the user uses the demo, a (guest) JWT identifies the user so that their progress
-    can be saved on the server. This is the authentication based on this guest JWT"""
+    can be saved on the server. This wrapper provides the guest user ID to the routes"""
+
     @functools.wraps(view)
     def wrapped_view(**kwargs):
 
         guest_jwt = request.headers["Guest-Authentication-Token"]
         current_app.logger.debug(f"Validating received guest-JWT: {guest_jwt}")
-        decoded_body = jwt.decode(guest_jwt, current_app.config["SECRET_KEY"], algorithms=['HS256'])
-        user_id = decoded_body["guestUserId"]
-        kwargs["temp_user"] = user_id
 
-        current_app.logger.debug(f"Request received from ID {user_id}")
+        guest_user = GuestUserFactory.from_jwt(guest_jwt, current_app.config["SECRET_KEY"])
+        current_app.logger.debug(f"Request received from ID {guest_user.id}")
 
+        kwargs["guest_user_id"] = guest_user.id
         return view(**kwargs)
 
     return wrapped_view
+
+
+@bp.route('/register-guest', methods=('POST',))
+def register_guest():
+
+    guest_user = GuestUserFactory.generate()
+    res = {
+        "guestJwt": guest_user.get_jwt(current_app.config["SECRET_KEY"]),
+        "guestJwtBody": guest_user.get_jwt_body()
+    }
+    current_app.logger.debug(f"JWT token created: {res['guestJwt']}")
+
+    return jsonify(res)
 
 
 @bp.route('/shared-lists', methods=('GET',))
@@ -54,26 +68,9 @@ def get_shared_lists():
     return jsonify(res)
 
 
-@bp.route('/register-guest', methods=('POST',))
-def register_guest():
-
-    jwt_body = {
-        "guestUserId": str(randint(0, 100000)),
-        "expires": "2020-10-15 12:34:00"
-    }
-
-    encoded_jwt = jwt.encode(jwt_body, current_app.config["SECRET_KEY"], algorithm='HS256')
-    current_app.logger.debug(f"JWT token created: {encoded_jwt}")
-    res = {
-        "guestJwt": encoded_jwt,
-        "guestJwtBody": jwt_body
-    }
-    return jsonify(res)
-
-
 @bp.route("/clone-word-list", methods=('POST',))
-@guest_auth_required
-def clone_shared(temp_user):
+@inject_guest_user_id
+def clone_shared(guest_user_id):
 
     collection_name = secure_filename(request.args['wordCollection'])
 
@@ -87,25 +84,22 @@ def clone_shared(temp_user):
     for word_list in voc.get_word_sheet_list():
         voc.reset_progress(word_list)
 
-    get_storage_manager().create_item(temp_user, voc)
+    get_word_collection_storage().create_item(guest_user_id, voc)
 
-    # Header: jwt
-    # collection (, list)
-    # output: authentication result, cloning result
     return jsonify({"success": True})
 
 
 @bp.route('/pick-question', methods=('POST', 'GET'))
-@guest_auth_required
-def pick_question(temp_user):
+@inject_guest_user_id
+def pick_question(guest_user_id):
 
     collection_name = secure_filename(request.args["wordCollection"])
     list_name = request.args["wordList"]
     pick_strategy = request.args["wordPickStrategy"]
 
     # Getting the stored collection
-    storage_id = get_storage_element_id(temp_user, collection_name, list_name)
-    voc: Vocabulary = get_storage_manager().get_item(storage_id)
+    storage_id = get_storage_element_id(guest_user_id, collection_name, list_name)
+    voc: Vocabulary = get_word_collection_storage().get_item(storage_id)
 
     # Fetching a question and the learning progress
 
@@ -137,22 +131,22 @@ def pick_question(temp_user):
 
 
 @bp.route('/answer-question', methods=('POST',))
-@guest_auth_required
-def answer_question(temp_user):
+@inject_guest_user_id
+def answer_question(guest_user_id):
     collection_name = secure_filename(request.args["wordCollection"])
     list_name = request.args["wordList"]
     answers = request.json["answers"]
 
 
-    storage_id = get_storage_element_id(temp_user, collection_name, list_name)
-    voc: Vocabulary = get_storage_manager().get_item(storage_id)
+    storage_id = get_storage_element_id(guest_user_id, collection_name, list_name)
+    voc: Vocabulary = get_word_collection_storage().get_item(storage_id)
     for row_key, is_correct in answers.items():
         voc.update_progress(list_name, int(row_key), is_correct)
 
     # Return learning progress for the word list
     learning_progress = voc.get_progress(list_name)
 
-    get_storage_manager().update_item(storage_id, voc)
+    get_word_collection_storage().update_item(storage_id, voc)
 
     res = {"learningProgress": learning_progress}
 

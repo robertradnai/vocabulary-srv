@@ -13,3 +13,4 @@ class IWordCollectionsDao(ABC):
     @abstractmethod
     def update_item(self, element_id: str, item_to_store: object) -> str:
         pass
+
