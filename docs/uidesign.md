@@ -48,7 +48,7 @@ German - English
 ___
 Finnish - English  
 **Basics I**  
-[Add to my lists]() | [Start learning]()
+Already added | [Continue learning]()
 ___
 
 ## User word lists
@@ -104,11 +104,13 @@ Progress: 75%
 Cloned at: 12 Jan 2021  
 Last opened at: 12 Feb 2021  
 [Start learning]() | [Assessment quiz]()  
-Extra quizes: 
+Extra quizzes:
 * [Präpositions]()
 * [Definitiv Artikel]()  
 
-[Reset learning progress]() | [Delete list]()  
+Manage (dropdown menu):
+* [Reset learning progress]()
+* [Delete list]()  
 ___
 
 

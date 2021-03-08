@@ -17,6 +17,8 @@ class SharedListsResponse {
     description: str
     lang1: str
     lang2: str
+    is_cloned: bool
+    cloned_list_id: int
 }
 
 ' *****
@@ -49,8 +51,7 @@ class "POST /clone-word-list" {
 class "GET /pick-questions" {
    .. query string ..
    wordlistid: int
-   quizstrategy: str
-   invertedlanguagedirection: bool
+   quiztype: str
    .. response ..
    200: QuizEntry[]
 }
@@ -58,7 +59,6 @@ class "GET /pick-questions" {
 class QuizEntry {
     question: Question
     flashcard: Flashcard
-    flashcard_only: bool
 }
 
 ' *****
