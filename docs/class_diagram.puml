@@ -46,19 +46,24 @@ class "POST /clone-word-list" {
 
 ' *****
 
-"GET /pick-questions" --> QuizEntry
+"GET /pick-questions" --> PickQuestionsResponse
+PickQuestionsResponse --> QuizEntry
 
 class "GET /pick-questions" {
    .. query string ..
    wordlistid: int
    quiztype: str
    .. response ..
-   200: QuizEntry[]
+   200: PickQuestionsResponse
+}
+
+class PickQuestionsResponse {
+    quizList: QuizEntry[]
 }
 
 class QuizEntry {
-    question: Question
-    flashcard: Flashcard
+    question: MultipleChoiceQuiz
+    flashcard: RenderedFlashcard
 }
 
 ' *****

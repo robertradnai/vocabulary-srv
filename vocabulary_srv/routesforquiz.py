@@ -8,6 +8,7 @@ from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
+
 from vocabulary_srv.wordcollections import get_storage_element_id, show_shared_collections
 from vocabulary_srv import get_word_collection_storage
 from vocabulary_srv.user import GuestUserFactory
@@ -102,33 +103,39 @@ def pick_question(guest_user_id):
     storage_id = get_storage_element_id(guest_user_id, collection_name, list_name)
     voc: Vocabulary = get_word_collection_storage().get_item(storage_id)
 
+    from .models import QuizEntry, Flashcard, MultipleChoiceQuiz
+    from vocabulary_srv.models import PickQuestionsResponse
+
     # Fetching a question and the learning progress
-
     quiz_list = voc.choice_quiz(list_name, pick_strategy)
-    res_dict_list = []
 
-    for quiz in quiz_list:
-        extended_directives: dict = {}
-        extended_directives.update(quiz.directives)
-        extended_directives.update({"lang1_name": voc.word_collection.word_lists[list_name].lang1,
-                                    "lang2_name": voc.word_collection.word_lists[list_name].lang2})
+    quiz_entries = []
 
-        res = {
-            "question": {
-                "options": quiz.question.options if quiz.question is not None else None,
-                "rowKey": quiz.question.row_key if quiz.question is not None else None,
-                "text": quiz.question.text if quiz.question is not None else None
-            },
-            "directives": extended_directives,
-            "flashcard": {
-                "lang1": quiz.flashcard.lang1,
-                "lang2": quiz.flashcard.lang2,
-                "remarks": quiz.flashcard.remarks
-            },
-        }
-        res_dict_list.append(res)
+    for quiz_entry_old in quiz_list:
 
-    return jsonify({"quizList": res_dict_list})
+        if quiz_entry_old.question is not None:
+            choice_quiz = MultipleChoiceQuiz(row_key=quiz_entry_old.question.row_key,
+                                             instruction_header=voc.word_collection.word_lists[list_name].lang1,
+                                             instruction_content=quiz_entry_old.flashcard.lang1,
+                                             options_header="{} - how would you translate?".format(
+                                                 voc.word_collection.word_lists[list_name].lang2),
+                                             options=quiz_entry_old.question.options,
+                                             correct_answer_indices=[2])
+        else:
+            choice_quiz = None
+
+        quiz_entry = QuizEntry(
+            question=choice_quiz,
+            flashcard=Flashcard(lang1=quiz_entry_old.flashcard.lang1,
+                                lang2=quiz_entry_old.flashcard.lang2,
+                                remarks=quiz_entry_old.flashcard.remarks,
+                                lang1_header=voc.word_collection.word_lists[list_name].lang1,
+                                lang2_header=voc.word_collection.word_lists[list_name].lang2,
+                                remarks_header="Remarks"))
+
+        quiz_entries.append(quiz_entry.__dict__)
+
+    return jsonify(PickQuestionsResponse(quiz_entries))
 
 
 @bp.route('/answer-question', methods=('POST',))

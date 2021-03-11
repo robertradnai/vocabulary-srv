@@ -30,14 +30,13 @@ def test_demo_quiz(client):
     r_quiz = client.post(f'/pick-question?wordCollection=testdict'
                          f'&wordList={TEST_LIST_NAME}&wordPickStrategy=dummy', headers=headers)
 
-    assert "quizList" in r_quiz.json
-    quiz_list = r_quiz.json['quizList']
+    assert "quiz_list" in r_quiz.json
+    quiz_list = r_quiz.json['quiz_list']
     for quiz in quiz_list:
-        assert 'directives' in quiz
         assert 'question' in quiz
         assert 'flashcard' in quiz
-        assert "lang1_name" in quiz["directives"]
-        assert "lang2_name" in quiz["directives"]
+        assert "lang1_header" in quiz["flashcard"]
+        assert "lang2_header" in quiz["flashcard"]
 
     answers = {2: True, 3: True, 4: True}
 

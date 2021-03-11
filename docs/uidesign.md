@@ -1,6 +1,20 @@
 # Basic UI design
 This document aims to help the app design process by enabling quick prototyping of the user interface.
 
+Forms, sites and components:
+* Welcome site for unregistered users
+* Welcome site for users that are logged in
+* Own word lists
+* Shared word lists
+* Send feedback
+
+Quiz:  
+* Quiz starter site
+* Flashcard
+* Multiple choice quiz
+* Statistics site
+* End of quiz site?
+
 ## Front page without logging in
 
 ### Remarks
@@ -113,6 +127,65 @@ Manage (dropdown menu):
 * [Delete list]()  
 ___
 
+## Flashcard
 
+### Content
 
+Finnish - English / Basics | [Back to list choice](#)
 
+FINNISH  
+> talo  
+
+ENGLISH  
+> house  
+
+Remarks:  
+> Some remarks
+
+[Next](#) | 1/10 | 0% overall
+
+***
+
+German - English / Basics | [Back to list choice](#)
+
+Das Wort
+> Zimmer
+
+Welcher ist der richtige Artikel?
+> [der](#)   
+> [die](#)  
+> [das](#)  
+  
+
+[Next](#) | 6/10 | 3.5% overall
+
+***
+
+lang1 - lang2 / Word list name | [Back to list choice](#)
+
+INSTRUCTION HEADER
+> Instruction content
+
+CHOICES HEADER
+> [choices[0]](#)   
+> [choices[1]](#)  
+> [choices[2]](#)  
+
+***
+
+## Quiz
+
+### Content
+
+Finnish - English / Basic | [Back to list choice](#)
+
+English
+> Room
+
+Finnish - how would you translate it?
+> paita  
+> huone  
+> haave  
+> ottaa  
+
+[Next](#) | 6/10 | 3.5% overall
