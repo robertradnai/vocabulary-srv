@@ -1,0 +1,26 @@
+@startuml
+start
+:Registered or gues user
+goes to shared lists site;
+:Chooses a word list
+that they want to learn
+(start quiz and add to my lists button);
+if (User is a guest or he/she
+clicks the start quiz button) then (yes)
+:User goes to the own lists site;
+:Starts quiz in the previously
+chosen shared list;
+else (no)
+:User gets redirected
+to the quiz starter site;
+endif
+:App shows some information about
+the quiz (quiz starter site)
+until the quiz loads;
+repeat
+:User goes through 5-15 flashcards and questions;
+repeat while (learning progress ) is (<100%)
+-> equals 100%;
+:App shows congratulations message;
+stop
+@enduml
