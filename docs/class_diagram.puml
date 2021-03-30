@@ -58,7 +58,7 @@ class "GET /pick-questions" {
 }
 
 class PickQuestionsResponse {
-    quizList: QuizEntry[]
+    quiz_list: QuizEntry[]
 }
 
 class QuizEntry {

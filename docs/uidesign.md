@@ -31,16 +31,9 @@ save your progress and edit your own word lists.
 
 [**REGISTER**]()
 
-Or start a demo:
-___
-German - English  
-**Workplace**  
-[Start learning]()
-___
-Finnish - English  
-**Basics I**  
-[Start learning]()
-___
+Or start a demo:  
+> Same content here as shared lists site
+
 ## Front page with logged in user
 
 ### Remarks
@@ -49,7 +42,10 @@ ___
 * Later, maybe also some statistics about how many words they learned 
   and how many times they logged in in the last n days.
 
-## Choose word lists to clone
+### Content
+> Same as user word lists site
+
+## Shared lists (choose lists to clone)
 
 ### Content
 
@@ -97,7 +93,7 @@ Manage (dropdown menu):
 * [Delete list]()  
 ___
 
-## Choose quiz type
+## Future user list site - Quiz type choice
 
 ### Remarks
 * Not all lists are suitable for all quiz types
