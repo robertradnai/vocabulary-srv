@@ -115,12 +115,13 @@ def pick_question(guest_user_id):
 
         if quiz_entry_old.question is not None:
             choice_quiz = MultipleChoiceQuiz(row_key=quiz_entry_old.question.row_key,
-                                             instruction_header=voc.word_collection.word_lists[list_name].lang1,
-                                             instruction_content=quiz_entry_old.flashcard.lang1,
+                                             instruction_header=voc.word_collection.word_lists[list_name].lang2,
+                                             instruction_content=quiz_entry_old.flashcard.lang2,
                                              options_header="{} - how would you translate?".format(
-                                                 voc.word_collection.word_lists[list_name].lang2),
+                                                 voc.word_collection.word_lists[list_name].lang1),
                                              options=quiz_entry_old.question.options,
                                              correct_answer_indices=[2])
+            # TODO assign real value to correct_answer_indices
         else:
             choice_quiz = None
 

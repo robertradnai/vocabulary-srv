@@ -1,7 +1,21 @@
-cd $'dirname('$0')' || exit
+#!/usr/bin/env bash
+
+set -x
+set -e
+
+cd "$(dirname "$0")" || exit
 cd ..
 
 rm -r venv
 python3 -m venv venv
+
+source venv/bin/activate
+which pip
+which python
+
+pip install -e git+https://github.com/robertradnai/vocabulary-lib@main#egg=vocabulary-RR
 pip install -e .
-pip install ../../packages/Vocabulary/vocabulary_RR-0.1-py3-none-any.whl
+
+
+
+pip freeze > requirements.txt
