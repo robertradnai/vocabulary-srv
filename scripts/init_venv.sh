@@ -7,6 +7,7 @@ cd "$(dirname "$0")" || exit
 cd ..
 
 rm -r venv
+rm -r src
 python3 -m venv venv
 
 source venv/bin/activate
