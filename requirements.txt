@@ -32,6 +32,5 @@ stringcase==1.2.0
 typing-extensions==3.7.4.3
 typing-inspect==0.6.0
 -e git+https://github.com/robertradnai/vocabulary-lib@dadc4983ad3c077dc8f8a17a9528ae86d90e128e#egg=vocabulary_RR
--e git+https://github.com/robertradnai/vocabulary-srv.git@0ce470cd18b817bb369f09652e19a45bc292286c#egg=vocabulary_srv
 Werkzeug==1.0.1
 WTForms==2.3.3

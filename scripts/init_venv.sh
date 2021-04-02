@@ -17,5 +17,6 @@ pip install -e git+https://github.com/robertradnai/vocabulary-lib@main#egg=vocab
 pip install -e .
 
 
-
-pip freeze > requirements.txt
+# vocabulary_srv will be installed from this project folder
+# instead of from Github
+pip freeze | grep -v "vocabulary_srv" > requirements.txt
