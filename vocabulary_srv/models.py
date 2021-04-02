@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json, LetterCase
 
 from typing import List
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class Flashcard:
     lang1: str
@@ -13,6 +15,7 @@ class Flashcard:
     remarks_header: str
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class MultipleChoiceQuiz:
     row_key: int
@@ -23,12 +26,14 @@ class MultipleChoiceQuiz:
     correct_answer_indices: List[int]
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class QuizEntry:
     question: MultipleChoiceQuiz
     flashcard: Flashcard
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]

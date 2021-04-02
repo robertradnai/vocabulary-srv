@@ -135,7 +135,7 @@ def pick_question(guest_user_id):
 
         quiz_entries.append(quiz_entry.__dict__)
 
-    return jsonify(PickQuestionsResponse(quiz_entries))
+    return jsonify(PickQuestionsResponse(quiz_list=quiz_entries).to_dict())
 
 
 @bp.route('/answer-question', methods=('POST',))
