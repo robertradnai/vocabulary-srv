@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build docker image
       run: |
-        sudo docker build -t vocabulary-srv -f Dockerfile --build-arg COMMIT_HASH="$(git rev-parse HEAD)" .
+        sudo docker build -t vocabulary_srv -f Dockerfile --build-arg COMMIT_HASH="$(git rev-parse HEAD)" .
     - name: Tag and upload docker image
       env: # Or as an environment variable
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
