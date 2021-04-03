@@ -1,11 +1,15 @@
 FROM python:3.8
 
+ARG COMMIT_HASH=main
+
 WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt
 
-ENV FLASK_APP="vocabulary_srv:create_app(None, '${SCRIPTPATH}/testconfig.py')"
-ENV FLASK_ENV=development
+# Installing vocabulary_srv from Github (and not from the local project folder)
+RUN pip install git+https://github.com/robertradnai/vocabulary-srv.git@$COMMIT_HASH#egg=vocabulary_srv
 
-CMD ["flask", "init-db"]
-CMD ["flask", "run"]
+# Copying starter scripts
+COPY scripts/run_clean_db_docker.sh /starter_scripts/run_clean_db.sh
+
+CMD ["bash", "/starter_scripts/run_clean_db.sh"]
