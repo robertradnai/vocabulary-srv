@@ -1,0 +1,17 @@
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build docker image
+      run: |
+        sudo docker build -t vocabulary-srv -f Dockerfile --build-arg COMMIT_HASH="$(git rev-parse HEAD)" .
+        
