@@ -9,4 +9,4 @@ set -e
 echo "Launching application..."
 #flask run
 
-gunicorn -w 4 -b 127.0.0.1:$PORT "vocabulary_srv:create_app(None, '/config/testconfig.py')"
+gunicorn -w 4 -b 127.0.0.1:$PORT "vocabulary_srv:create_app(None, '/config/config.py')"
