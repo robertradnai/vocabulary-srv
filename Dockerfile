@@ -2,6 +2,8 @@ FROM python:3.8
 
 ARG COMMIT_HASH=main
 
+RUN pip install gunicorn
+
 WORKDIR /app
 COPY requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt

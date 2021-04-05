@@ -3,11 +3,10 @@
 set -x
 set -e
 
-export FLASK_APP="vocabulary_srv:create_app(None, '/config/testconfig.py')"
-export FLASK_ENV=development
 
-echo "FLASK_APP=$FLASK_APP"
-echo "Initializing DB..."
-flask init-db
+#echo "Initializing DB..."
+#flask init-db
 echo "Launching application..."
-flask run
+#flask run
+
+gunicorn -w 4 -b 127.0.0.1:$PORT "vocabulary_srv:create_app(None, '/config/testconfig.py')"
