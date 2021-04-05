@@ -12,6 +12,6 @@ RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/robertradnai/vocabulary-srv.git@$COMMIT_HASH#egg=vocabulary_srv
 
 # Copying starter scripts
-COPY scripts/run_clean_db_docker.sh /starter_scripts/run_clean_db.sh
+COPY scripts/srv_start_gunicorn.sh /starter_scripts/srv_start_gunicorn.sh
 
-CMD ["bash", "/starter_scripts/run_clean_db.sh"]
+CMD ["bash", "/starter_scripts/srv_start_gunicorn.sh"]

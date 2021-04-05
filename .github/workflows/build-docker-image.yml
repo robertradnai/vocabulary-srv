@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docker image
-      run: bash ./scripts/docker_build.sh
+      run: bash ./scripts/docker_srv_build.sh
     - name: Tag and upload docker image
       env: # Or as an environment variable
         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
