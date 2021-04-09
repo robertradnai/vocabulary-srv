@@ -1,25 +1,39 @@
-from .database import db
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json, LetterCase
+
+from typing import List
 
 
-class WordCollections(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    # The unique constraint stays until login and collection management is implemented
-    user_id = db.Column(db.String(80), nullable=False, unique=True)
-    created_at = db.Column(db.String())
-    last_modified_at = db.Column(db.DateTime())
-    wc_object = db.Column(db.PickleType())
-    collection_name = db.Column(db.String())
-    collection_display_name = db.Column(db.String())
-
-    def __repr__(self):
-        return f"<User id={self.id}, user_id={self.username}, created_at={self.created_at}, last_modified_at={self.last_modified_at}>"
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class Flashcard:
+    lang1: str
+    lang2: str
+    remarks: str
+    lang1_header: str
+    lang2_header: str
+    remarks_header: str
 
 
-class Feedback(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    submitted_at = db.Column(db.DateTime)
-    name = db.Column(db.String())
-    email = db.Column(db.String())
-    is_subscribe = db.Column(db.Boolean())
-    subject = db.Column(db.String())
-    message = db.Column(db.String())
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class MultipleChoiceQuiz:
+    row_key: int
+    instruction_header: str
+    instruction_content: str
+    options_header: str
+    options: List[str]
+    correct_answer_indices: List[int]
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class QuizEntry:
+    question: MultipleChoiceQuiz
+    flashcard: Flashcard
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class PickQuestionsResponse:
+    quiz_list: List[QuizEntry]

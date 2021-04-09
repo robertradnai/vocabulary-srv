@@ -1,0 +1,140 @@
+
+@startuml
+
+
+' *****
+
+"GET /shared-lists" --> SharedListsResponse
+
+class "GET /shared-lists" {
+   .. response ..
+   200: SharedListsResponse[]
+}
+
+class SharedListsResponse {
+    word_list_id: int
+    word_list_display_name: str
+    description: str
+    lang1: str
+    lang2: str
+    is_cloned: bool
+    cloned_list_id: int
+}
+
+' *****
+
+"GET /user-lists" --> UserListsResponse
+class "GET /user-lists" {
+   .. response ..
+   200: UserListsResponse[]
+}
+
+UserListsResponse --|> SharedListsResponse
+class UserListsResponse {
+    progress: int
+    created_at: Datetime
+    last_opened_at: Datetime
+}
+
+"POST /clone-word-list" --> SubmissionResponse
+class "POST /clone-word-list" {
+   .. body ..
+   word_list_id: int
+   .. response ..
+   200: SubmissionResponse
+}
+
+' *****
+
+"GET /pick-questions" --> PickQuestionsResponse
+PickQuestionsResponse --> QuizEntry
+
+class "GET /pick-questions" {
+   .. query string ..
+   wordlistid: int
+   quiztype: str
+   .. response ..
+   200: PickQuestionsResponse
+}
+
+class PickQuestionsResponse {
+    quiz_list: QuizEntry[]
+}
+
+class QuizEntry {
+    question: MultipleChoiceQuiz
+    flashcard: RenderedFlashcard
+}
+
+' *****
+"POST /submit-answers" --> SubmitAnswersResponse
+"POST /submit-answers" --> SubmittedAnswers
+
+class "POST /submit-answers" {
+   .. body ..
+   SubmittedAnswers
+   .. response ..
+   200: SubmitAnswersResponse
+}
+
+class SubmissionResponse {
+  status_ok: bool
+  error_code: str
+  message: str
+}
+
+class SubmitAnswersResponse {
+    learning_progress: int
+}
+
+class SubmittedAnswers {
+    answers: Dict[int, bool]
+}
+
+
+' *****
+
+"GET /guest-user" --> UserJwt
+
+class "GET /guest-user" {
+    .. response ..
+    UserJwt
+}
+class UserJwt {
+    jwt_string: str
+    user_id: int
+    user_roles: List[str]
+    expires_at: Datetime
+}
+
+"POST /login" --> UserJwt
+class "POST /login" {
+    .. response ..
+    UserJwt
+}
+
+' *****
+' *****
+
+"GET /pick-questions" --> WordListLearningProgress
+"GET /pick-questions" --> WordListDaoDb
+"GET /pick-questions" --> QuizBuilder
+
+WordListDaoDb --> WordListLearningProgress
+WordListLearningProgress --> QuizBuilderInstructions
+
+
+class WordListLearningProgress {
+    {method} __init__(learning_progress: **FROM DAO**)
+    {method} configure_quiz(quiz_config: QuizConfig)
+    {method} pick_questions() -> QuizBuilderInstructions[]
+    {method} calculate_learning_progress() -> int
+    {method} reset_learning_progress()
+}
+
+class QuizBuilderInstructions {
+    row_id: int
+    flashcard_only: bool
+}
+
+@enduml

@@ -1,0 +1,20 @@
+on:
+  push:
+    branches: [ main, develop ]
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build docker image
+      run: bash ./scripts/docker_srv_build.sh
+    - name: Tag and upload docker image
+      env: # Or as an environment variable
+        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: |
+        echo $DOCKERHUB_PASSWORD | sudo docker login --username robertradnai --password-stdin
+        sudo docker tag vocabulary_srv robertradnai/vocabulary_srv:"$(git branch --show-current)"
+        sudo docker push robertradnai/vocabulary_srv:"$(git branch --show-current)"

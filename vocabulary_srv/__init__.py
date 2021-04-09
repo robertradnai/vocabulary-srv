@@ -77,7 +77,7 @@ def create_app(test_config=None, config_filename=None):
         pass
 
     # The db engine needs to know about the models
-    from . import models
+    from . import dbmodels
     db.init_app(app)
 
     # Routes for the application

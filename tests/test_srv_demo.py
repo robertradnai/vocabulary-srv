@@ -33,11 +33,10 @@ def test_demo_quiz(client):
     assert "quizList" in r_quiz.json
     quiz_list = r_quiz.json['quizList']
     for quiz in quiz_list:
-        assert 'directives' in quiz
         assert 'question' in quiz
         assert 'flashcard' in quiz
-        assert "lang1_name" in quiz["directives"]
-        assert "lang2_name" in quiz["directives"]
+        assert "lang1Header" in quiz["flashcard"]
+        assert "lang2Header" in quiz["flashcard"]
 
     answers = {2: True, 3: True, 4: True}
 

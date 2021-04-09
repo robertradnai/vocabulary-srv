@@ -48,12 +48,12 @@ def init_app(app):
 class DbWordCollectionStorage(IWordCollectionsDao):
 
     def get_item(self, element_id: str) -> object:
-        from .models import WordCollections
+        from .dbmodels import WordCollections
         return WordCollections\
             .query.filter_by(user_id=element_id).first().wc_object
 
     def create_item(self, element_id: str, item_to_store: object) -> None:
-        from .models import WordCollections
+        from .dbmodels import WordCollections
         entry = WordCollections(user_id=element_id,
                                 created_at=datetime.now(),
                                 last_modified_at=datetime.now(),
@@ -65,7 +65,7 @@ class DbWordCollectionStorage(IWordCollectionsDao):
 
     def update_item(self, element_id: str, item_to_store: object) -> None:
 
-        from .models import WordCollections
+        from .dbmodels import WordCollections
         entry: WordCollections = WordCollections \
             .query.filter_by(user_id=element_id).first()
         entry.wc_object = item_to_store
@@ -75,7 +75,7 @@ class DbWordCollectionStorage(IWordCollectionsDao):
 class FeedbackStorage:
     @staticmethod
     def insert(name, email, is_subscribe, subject, message):
-        from .models import Feedback
+        from .dbmodels import Feedback
         entry = Feedback(name=name,
                          submitted_at = datetime.now(),
                          email=email,
@@ -87,5 +87,5 @@ class FeedbackStorage:
 
     @staticmethod
     def get_count():
-        from .models import Feedback
+        from .dbmodels import Feedback
         return db.session.query(Feedback.name).count()
