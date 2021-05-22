@@ -2,20 +2,21 @@
 This document aims to help the app design process by enabling quick prototyping of the user interface.
 
 Forms, sites and components:
-* Welcome site for unregistered users
-* Welcome site for users that are logged in
-* Own word lists
-* Shared word lists
+* Welcome site for unregistered users (intro text + available word lists)
+* Welcome site for users that are logged in (--> own word lists)
+* My word lists
+* Available word lists
 * Send feedback
 
 Quiz:  
-* Quiz starter site
+* Quiz starter site before first quiz round
+* Statistics site between quiz rounds
+* End of quiz site
 * Flashcard
 * Multiple choice quiz
-* Statistics site
-* End of quiz site?
 
-## Front page without logging in
+
+## Welcome site for unregistered users 
 
 ### Remarks
 * The user type should be communicated to the front end because some app functionalities
@@ -34,7 +35,7 @@ save your progress and edit your own word lists.
 Or start a demo:  
 > Same content here as shared lists site
 
-## Front page with logged in user
+## Welcome site for users that are logged in
 
 ### Remarks
 
@@ -45,7 +46,39 @@ Or start a demo:
 ### Content
 > Same as user word lists site
 
-## Shared lists (choose lists to clone)
+## My word lists
+
+### Remarks 
+* When the language direction is inverted, does that still count as additional learning progress?
+* How valuable is this switch languages function?
+  * Maybe it depends on which language the learner wants to learn 
+    (German native speaker learning Hungarian or Hungarian native speaker learning German).
+  * But then most of the remarks are useless, one knows their native language well enough
+  * *7 March 2021: It's decided that the language direction change won't be implemented
+    in the near future due to low added value*
+
+### Content
+___
+German (for English speakers)  
+**Workplace**   
+Progress: 75%   
+Cloned at: 12 Jan 2021  
+Last opened at: 12 Feb 2021  
+[Start learning]() | [Assessment quiz]()  
+[Reset learning progress]() | [Delete list]()  
+___
+Finnish (for English speakers)   
+**Basics I**  
+Progress: 43%  
+Cloned at: 12 Jan 2021  
+Last opened at: 12 Feb 2021  
+[Start learning]() | [Assessment quiz]()  
+Manage (dropdown menu):
+* [Reset learning progress]()
+* [Delete list]()  
+___
+
+## Available word lists
 
 ### Content
 
@@ -61,37 +94,7 @@ Finnish - English
 Already added | [Continue learning]()
 ___
 
-## User word lists
 
-### Remarks 
-* When the language direction is inverted, does that still count as additional learning progress?
-* How valuable is this switch languages function?
-  * Maybe it depends on which language the learner wants to learn 
-    (German native speaker learning Hungarian or Hungarian native speaker learning German).
-  * But then most of the remarks are useless, one knows their native language well enough
-  * *7 March 2021: It's decided that the language direction change won't be implemented
-    in the near future due to low added value*
-
-### Content
-___
-German - English  
-**Workplace**   
-Progress: 75%   
-Cloned at: 12 Jan 2021  
-Last opened at: 12 Feb 2021  
-[Start learning]() | [Assessment quiz]()  
-[Reset learning progress]() | [Delete list]()  
-___
-Finnish - English  
-**Basics I**  
-Progress: 43%  
-Cloned at: 12 Jan 2021  
-Last opened at: 12 Feb 2021  
-[Start learning]() | [Assessment quiz]()  
-Manage (dropdown menu):
-* [Reset learning progress]()
-* [Delete list]()  
-___
 
 ## Future user list site - Quiz type choice
 
@@ -123,11 +126,49 @@ Manage (dropdown menu):
 * [Delete list]()  
 ___
 
-## Flashcard
+## Quiz - Quiz starter site before first quiz round
+
+### Remarks
 
 ### Content
 
-Finnish - English / Basics | [Back to list choice](#)
+Finnish (for English speakers) / Basics | [Back to my word lists](#)  
+
+In this quiz round, you'll see
+* a few flashcards, try to memorize them,
+* questions based on the new flashcards,
+* and questions based on earlier flashcards to deepen your knowledge.
+
+Your learning progress will be saved after each finished quiz round.
+
+## Quiz - Statistics site between quiz rounds
+
+### Remarks
+
+### Content
+
+Finnish (for English speakers) / Basics | [Back to my word lists](#)
+
+You answered 4 out of the 5 questions correctly.
+
+Your learning progress on the whole list: 13.3 %
+
+## Quiz - End of quiz site
+
+### Remarks
+
+### Content
+
+Finnish (for English speakers) / Basics | [Back to my word lists](#)
+
+*Congratulations!* You've just finished this word list by 
+repeatedly answering the quiz questions correctly.
+
+## Quiz - Flashcard
+
+### Content
+
+Finnish (for English speakers) / Basics 1 | [Back to my word lists](#)
 
 FINNISH  
 > talo  
@@ -142,7 +183,7 @@ Remarks:
 
 ***
 
-German - English / Basics | [Back to list choice](#)
+German (for English speakers) / Basics | [Back to my word lists](#)
 
 Das Wort
 > Zimmer
@@ -157,7 +198,7 @@ Welcher ist der richtige Artikel?
 
 ***
 
-lang1 - lang2 / Word list name | [Back to list choice](#)
+lang1 (for lang2 speakers) / Word list name | [Back to my word lists](#)
 
 INSTRUCTION HEADER
 > Instruction content
@@ -169,11 +210,11 @@ CHOICES HEADER
 
 ***
 
-## Quiz
+## Quiz - Multiple-choice quiz
 
 ### Content
 
-Finnish - English / Basic | [Back to list choice](#)
+Finnish (for English speakers) / Basics 1 | [Back to my word lists](#)
 
 English
 > Room
