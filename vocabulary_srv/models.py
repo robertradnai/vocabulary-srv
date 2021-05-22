@@ -37,3 +37,4 @@ class QuizEntry:
 @dataclass
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]
+    learning_progress: int
