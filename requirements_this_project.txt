@@ -1,1 +1,0 @@
--e git+https://github.com/robertradnai/vocabulary-srv.git@728cadb9c195bb5658518d06a5bd79bbf5c59db4#egg=vocabulary_srv

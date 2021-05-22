@@ -136,7 +136,9 @@ def pick_question(guest_user_id):
 
         quiz_entries.append(quiz_entry.__dict__)
 
-    return jsonify(PickQuestionsResponse(quiz_list=quiz_entries).to_dict())
+    learning_progress = voc.get_progress(list_name)
+    return jsonify(PickQuestionsResponse(quiz_list=quiz_entries,
+                                         learning_progress=learning_progress).to_dict())
 
 
 @bp.route('/answer-question', methods=('POST',))

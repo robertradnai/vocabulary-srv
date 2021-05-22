@@ -31,6 +31,6 @@ SQLAlchemy==1.4.4
 stringcase==1.2.0
 typing-extensions==3.7.4.3
 typing-inspect==0.6.0
--e git+https://github.com/robertradnai/vocabulary-lib@dadc4983ad3c077dc8f8a17a9528ae86d90e128e#egg=vocabulary_RR
+-e git+https://github.com/robertradnai/vocabulary-lib@4f4de1ad848962893247d4103ae1da84b8e249b5#egg=vocabulary_RR
 Werkzeug==1.0.1
 WTForms==2.3.3
