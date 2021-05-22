@@ -4,8 +4,8 @@
       "wordCollection": "testdict.xlsx",
       "wordCollectionDisplayName": "Finnish - English test",
       "wordLists": [
-        {"wordList": "shorttest", "wordListDisplayName": "Short list for testing"},
-        {"wordList": "Vocabulary 1", "wordListDisplayName": "Vocabulary 1"}
+        {"wordList": "shorttest", "wordListDisplayName": "Short list for testing", "wordListId": 1},
+        {"wordList": "Vocabulary 1", "wordListDisplayName": "Vocabulary 1", "wordListId": 2}
       ]
     }
   ]
