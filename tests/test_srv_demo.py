@@ -4,6 +4,7 @@ from flask.wrappers import Response
 
 TEST_COLLECTION_NAME = "testdict.xlsx"
 TEST_LIST_NAME = "shorttest"
+TEST_LIST_ID = 1
 
 
 def test_config():
@@ -15,6 +16,7 @@ def test_demo_quiz(client):
 
     assert TEST_COLLECTION_NAME == r_list.json[0]["wordCollection"]
     assert TEST_LIST_NAME == r_list.json[0]["wordList"]
+    assert TEST_LIST_ID == r_list.json[0]["wordListId"]
 
     r_register: Response = client.post('/register-guest')
     assert 'guestJwt' in r_register.json
@@ -24,11 +26,11 @@ def test_demo_quiz(client):
     # https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
     headers = {'Guest-Authentication-Token': guest_jwt}
 
-    r_clone_word_list = client.post(f'/clone-word-list?wordCollection={TEST_COLLECTION_NAME}', headers=headers)
+    r_clone_word_list = client.post(f'/clone-word-list?wordListId={TEST_LIST_ID}', headers=headers)
     assert r_clone_word_list.json['success']
 
-    r_quiz = client.post(f'/pick-question?wordCollection=testdict'
-                         f'&wordList={TEST_LIST_NAME}&wordPickStrategy=dummy', headers=headers)
+    r_quiz = client.post(f'/pick-question?wordListId={TEST_LIST_ID}'
+                         f'&wordPickStrategy=dummy', headers=headers)
 
     assert "quizList" in r_quiz.json
     quiz_list = r_quiz.json['quizList']
@@ -41,8 +43,8 @@ def test_demo_quiz(client):
     answers = {2: True, 3: True, 4: True}
 
     # Submit batch answer
-    r_submit_answer = client.post('/answer-question?wordCollection=testdict'
-                                  f'&wordList={TEST_LIST_NAME}&wordPickStrategy=dummy',
+    r_submit_answer = client.post(f'/answer-question?wordListId={TEST_LIST_ID}'
+                                  f'&wordPickStrategy=dummy',
                                   headers=headers, json={"answers": answers})
 
     # Verify if a few correct answers had an effect on the learning progress
