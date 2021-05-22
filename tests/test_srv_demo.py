@@ -2,9 +2,10 @@ from vocabulary_srv import create_app
 from vocabulary_srv.database import FeedbackStorage
 from flask.wrappers import Response
 
-TEST_COLLECTION_NAME = "testdict.xlsx"
-TEST_LIST_NAME = "shorttest"
 TEST_LIST_ID = 1
+TEST_LIST_DISPLAY_NAME = "Short list for testing"
+TEST_LIST_LANG1 = "Finnish"
+TEST_LIST_LANG2 = "English"
 
 
 def test_config():
@@ -14,9 +15,10 @@ def test_config():
 def test_demo_quiz(client):
     r_list: Response = client.get('/shared-lists')
 
-    assert TEST_COLLECTION_NAME == r_list.json[0]["wordCollection"]
-    assert TEST_LIST_NAME == r_list.json[0]["wordList"]
+    assert TEST_LIST_DISPLAY_NAME == r_list.json[0]["wordListDisplayName"]
     assert TEST_LIST_ID == r_list.json[0]["wordListId"]
+    assert TEST_LIST_LANG1 == r_list.json[0]["lang1"]
+    assert TEST_LIST_LANG2 == r_list.json[0]["lang2"]
 
     r_register: Response = client.post('/register-guest')
     assert 'guestJwt' in r_register.json
@@ -64,12 +66,12 @@ def test_feedback_subscribe(app):
     with app.app_context():
         assert FeedbackStorage.get_count() == 0  # No entries in the table
 
-    form_data = {"name": "Aladar", "email":"aladar@example.com", "is_subscribe": True,
+    form_data = {"name": "Aladar", "email": "aladar@example.com", "is_subscribe": True,
                  "subject": "some subject", "message": "some message"}
     r_feedback: Response = app.test_client().post("/feedback-or-subscribe", data=form_data)
 
-    form_data_bad_email = {"name": "Aladar", "email":"invalid email", "is_subscribe": True,
-                 "subject": "some subject", "message": "some message"}
+    form_data_bad_email = {"name": "Aladar", "email": "invalid email", "is_subscribe": True,
+                           "subject": "some subject", "message": "some message"}
 
     r_bad_email: Response = app.test_client().post("/feedback-or-subscribe", data=form_data_bad_email)
 

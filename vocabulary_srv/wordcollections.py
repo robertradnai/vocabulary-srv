@@ -1,11 +1,7 @@
-import os
-from pdb import set_trace
-
-from vocabulary.dataaccess import load_wordlist_book
-from vocabulary.stateless import Vocabulary
-from abc import ABC, abstractmethod
 from typing import List
 from yaml import load, Loader
+
+from vocabulary_srv.models import SharedListsResponse
 
 
 class WordListsElement:
@@ -19,7 +15,7 @@ class WordListsElement:
         self.word_list_id = word_list_id
 
 
-def show_shared_collections(shared_collections_metadata: str) -> List[WordListsElement]:
+def show_shared_collections(shared_collections_metadata: str) -> List[SharedListsResponse]:
 
     with open(shared_collections_metadata) as f:
         metadata_file_content = f.read()
@@ -30,11 +26,17 @@ def show_shared_collections(shared_collections_metadata: str) -> List[WordListsE
     for collection in metadata['shared_collections_xlsx']:
         for word_list in collection["wordLists"]:
             word_lists.append(
-                WordListsElement(word_collection_name=collection["wordCollection"],
-                                 word_collection_display_name=collection["wordCollectionDisplayName"],
-                                 word_list_name= word_list["wordList"],
-                                 word_list_display_name=word_list["wordListDisplayName"],
-                                 word_list_id=word_list["wordListId"])
+                SharedListsResponse(
+                    word_list_id=word_list["wordListId"],
+                    word_list_display_name=word_list["wordListDisplayName"],
+                    description=word_list["description"],
+                    lang1=word_list["lang1"],
+                    lang2=word_list["lang2"],
+                    is_cloned=False,
+                    cloned_list_id=-1,
+                    word_collection_name=collection["wordCollection"],
+                    word_list_name=word_list["wordList"]
+                )
             )
 
     return word_lists

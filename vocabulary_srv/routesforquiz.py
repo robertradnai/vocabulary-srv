@@ -1,14 +1,15 @@
 import functools
 import os
+from typing import List
 
 from flask import Blueprint, jsonify, request, current_app, Response
 from werkzeug.exceptions import HTTPException
-from werkzeug.utils import secure_filename
 from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
 
+from vocabulary_srv.models import SharedListsResponse
 from vocabulary_srv.wordcollections import get_storage_element_id, show_shared_collections
 from vocabulary_srv import get_word_collection_storage
 from vocabulary_srv.user import GuestUserFactory
@@ -52,24 +53,16 @@ def register_guest():
 @bp.route('/shared-lists', methods=('GET',))
 def get_shared_lists():
 
-    word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
-                                                              current_app.config["SHARED_WORKBOOKS_METADATA"]))
+    word_list_elements: List[SharedListsResponse] = show_shared_collections(os.path.join(
+        current_app.instance_path, current_app.config["SHARED_WORKBOOKS_METADATA"]))
 
-    res = [
-        {"wordCollectionDisplayName": word_list_element.word_collection_display_name,
-         "wordListDisplayName": word_list_element.word_list_display_name,
-         "wordCollection": word_list_element.word_collection_name,
-         "wordList": word_list_element.word_list_name,
-         "wordListId": word_list_element.word_list_id}
-        for word_list_element in word_list_elements]
-
-    return jsonify(res)
+    return jsonify([word_list_element.to_dict() for word_list_element
+                    in word_list_elements])
 
 
 def get_collection_list_name_from_id(word_list_id: int):
     word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
                                                               current_app.config["SHARED_WORKBOOKS_METADATA"]))
-    word_list_id = int(request.args['wordListId'])
     word_collection_index = [i for i, v in enumerate(word_list_elements)
                              if v.word_list_id == word_list_id][0]
 
@@ -86,8 +79,6 @@ def clone_shared(guest_user_id: str):
         Validate the path of the word collection, then load it into the DB.
     """
 
-    word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
-                                                              current_app.config["SHARED_WORKBOOKS_METADATA"]))
     word_list_id = int(request.args['wordListId'])
 
     collection_name, _ = get_collection_list_name_from_id(word_list_id)

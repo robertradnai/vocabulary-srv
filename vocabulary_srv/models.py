@@ -38,3 +38,17 @@ class QuizEntry:
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]
     learning_progress: int
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class SharedListsResponse:
+    word_list_id: int
+    word_list_display_name: str
+    description: str
+    lang1: str
+    lang2: str
+    is_cloned: bool
+    cloned_list_id: int
+    word_collection_name: str
+    word_list_name: str
