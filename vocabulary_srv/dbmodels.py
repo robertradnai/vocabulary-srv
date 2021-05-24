@@ -10,9 +10,7 @@ class WordCollections(db.Model):
     wc_object = db.Column(db.PickleType())
     collection_name = db.Column(db.String())
     collection_display_name = db.Column(db.String())
-
-    def __repr__(self):
-        return f"<User id={self.id}, user_id={self.username}, created_at={self.created_at}, last_modified_at={self.last_modified_at}>"
+    available_word_list_id = db.Column(db.Integer)
 
 
 class Feedback(db.Model):

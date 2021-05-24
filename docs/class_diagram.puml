@@ -12,13 +12,13 @@ class "GET /shared-lists" {
 }
 
 class SharedListsResponse {
-    word_list_id: int
+    available_word_list_id: int
+    user_word_list_id: int
+    is_added_to_user_word_lists: int
     word_list_display_name: str
     description: str
     lang1: str
     lang2: str
-    is_cloned: bool
-    cloned_list_id: int
 }
 
 ' *****
@@ -29,8 +29,9 @@ class "GET /user-lists" {
    200: UserListsResponse[]
 }
 
-UserListsResponse --|> SharedListsResponse
+UserWordListMeta --|> SharedListsResponse
 class UserListsResponse {
+
     progress: int
     created_at: Datetime
     last_opened_at: Datetime
@@ -83,6 +84,7 @@ class SubmissionResponse {
   status_ok: bool
   error_code: str
   message: str
+  cloned_word_list: UserListsResponse
 }
 
 class SubmitAnswersResponse {

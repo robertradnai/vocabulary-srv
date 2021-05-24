@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 import click
 from flask import g
@@ -55,14 +56,16 @@ class DbWordCollectionStorage(IWordCollectionsDao):
             .query.filter_by(id=element_id).first()
         return row.wc_object, row.user_id
 
-    def create_item(self, element_id: int, item_to_store: object) -> int:
+    def create_item(self, element_id: int, item_to_store: object,
+                    available_word_list_id: int) -> int:
         from .dbmodels import WordCollections
         entry = WordCollections(user_id=element_id,
                                 created_at=datetime.now(),
                                 last_modified_at=datetime.now(),
                                 wc_object=item_to_store,
                                 collection_name="",
-                                collection_display_name="")
+                                collection_display_name="",
+                                available_word_list_id=available_word_list_id)
         db.session.add(entry)
         db.session.commit()
         return entry.id
@@ -74,6 +77,17 @@ class DbWordCollectionStorage(IWordCollectionsDao):
             .query.filter_by(id=element_id).first()
         entry.wc_object = item_to_store
         db.session.commit()
+
+    def get_already_existing_user_word_list_id(self, user_id, available_word_list_id) \
+            -> Optional[int]:
+        from .dbmodels import WordCollections
+        entry: WordCollections = WordCollections \
+            .query.filter_by(user_id=user_id,
+                             available_word_list_id=available_word_list_id).first()
+        if entry is None:
+            return None
+        else:
+            return entry.user_word_list_id
 
 
 class FeedbackStorage:

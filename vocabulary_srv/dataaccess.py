@@ -7,7 +7,7 @@ class IWordCollectionsDao(ABC):
         pass
 
     @abstractmethod
-    def create_item(self, element_id: int, item_to_store: object) -> int:
+    def create_item(self, element_id: int, item_to_store: object, available_word_list_id: int) -> int:
         pass
 
     @abstractmethod

@@ -29,7 +29,7 @@ def test_demo_quiz(client):
     # https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
     headers = {'Guest-Authentication-Token': guest_jwt}
 
-    r_clone_word_list = client.post(f'/clone-word-list?wordListId={TEST_AVAILABLE_LIST_ID}', headers=headers)
+    r_clone_word_list = client.post(f'/clone-word-list?availableWordListId={TEST_AVAILABLE_LIST_ID}', headers=headers)
     assert type(r_clone_word_list.json["userWordListId"]) is int
     assert TEST_USER_LIST_ID == r_clone_word_list.json["userWordListId"]
 

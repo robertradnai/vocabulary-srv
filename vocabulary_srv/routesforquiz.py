@@ -1,6 +1,6 @@
 import functools
 import os
-from typing import List
+from typing import List, Optional
 
 from flask import Blueprint, jsonify, request, current_app, Response
 from werkzeug.exceptions import HTTPException
@@ -73,27 +73,36 @@ def get_word_list_meta_from_id(word_list_id: int) -> WordListMeta:
 def clone_shared(guest_user_id: str):
 
     """
-        Validate the path of the word collection, then load it into the DB.
+        This endpoint takes the chosen available word list ID. If the chosen list hasn't been
+        added to the user's own word list, this will be performed and some basic
+        reference and information about it will be returned to the client. If the chosen list has
+        been added earlier, then the information of this list will be returned,
+        without adding the list to the user's word lists again.
     """
 
-    available_word_list_id = int(request.args['wordListId'])
+    available_word_list_id = int(request.args['availableWordListId'])
     word_list_meta = get_word_list_meta_from_id(available_word_list_id)
+    user_word_list_id: Optional[int] = get_word_collection_storage() \
+        .get_already_existing_user_word_list_id(guest_user_id, available_word_list_id)
 
-    workbook_path = os.path.join(current_app.instance_path,
-                                 current_app.config["SHARED_WORKBOOKS_PATH"],
-                                 word_list_meta.word_collection_name)
-    if not os.path.exists(workbook_path):
-        return Response(status=400)
+    if user_word_list_id is None:
 
-    voc = Vocabulary()
-    voc.load(workbook_path, load_wordlist_book)
+        workbook_path = os.path.join(current_app.instance_path,
+                                     current_app.config["SHARED_WORKBOOKS_PATH"],
+                                     word_list_meta.word_collection_name)
+        if not os.path.exists(workbook_path):
+            return Response(status=400)
 
-    for word_list in voc.get_word_sheet_list():
-        voc.reset_progress(word_list)
-    voc.selected_word_list_name = word_list_meta.word_list_name
-    user_word_list_id: int = get_word_collection_storage().create_item(guest_user_id, voc)
+        voc = Vocabulary()
+        voc.load(workbook_path, load_wordlist_book)
+
+        for word_list in voc.get_word_sheet_list():
+            voc.reset_progress(word_list)
+        voc.selected_word_list_name = word_list_meta.word_list_name
+        user_word_list_id: int = get_word_collection_storage() \
+            .create_item(guest_user_id, voc, available_word_list_id)
+
     word_list_meta.user_word_list_id = user_word_list_id
-
     return jsonify(word_list_meta.to_dict())
 
 
