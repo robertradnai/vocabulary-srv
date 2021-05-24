@@ -2,7 +2,8 @@ from vocabulary_srv import create_app
 from vocabulary_srv.database import FeedbackStorage
 from flask.wrappers import Response
 
-TEST_LIST_ID = 1
+TEST_AVAILABLE_LIST_ID = 1
+TEST_USER_LIST_ID = 1
 TEST_LIST_DISPLAY_NAME = "Short list for testing"
 TEST_LIST_LANG1 = "Finnish"
 TEST_LIST_LANG2 = "English"
@@ -16,7 +17,7 @@ def test_demo_quiz(client):
     r_list: Response = client.get('/shared-lists')
 
     assert TEST_LIST_DISPLAY_NAME == r_list.json[0]["wordListDisplayName"]
-    assert TEST_LIST_ID == r_list.json[0]["wordListId"]
+    assert TEST_AVAILABLE_LIST_ID == r_list.json[0]["availableWordListId"]
     assert TEST_LIST_LANG1 == r_list.json[0]["lang1"]
     assert TEST_LIST_LANG2 == r_list.json[0]["lang2"]
 
@@ -28,10 +29,11 @@ def test_demo_quiz(client):
     # https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
     headers = {'Guest-Authentication-Token': guest_jwt}
 
-    r_clone_word_list = client.post(f'/clone-word-list?wordListId={TEST_LIST_ID}', headers=headers)
-    assert r_clone_word_list.json['success']
+    r_clone_word_list = client.post(f'/clone-word-list?wordListId={TEST_AVAILABLE_LIST_ID}', headers=headers)
+    assert type(r_clone_word_list.json["userWordListId"]) is int
+    assert TEST_USER_LIST_ID == r_clone_word_list.json["userWordListId"]
 
-    r_quiz = client.post(f'/pick-question?wordListId={TEST_LIST_ID}'
+    r_quiz = client.post(f'/pick-question?userWordListId={TEST_USER_LIST_ID}'
                          f'&wordPickStrategy=dummy', headers=headers)
 
     assert "quizList" in r_quiz.json
@@ -45,7 +47,7 @@ def test_demo_quiz(client):
     answers = {2: True, 3: True, 4: True}
 
     # Submit batch answer
-    r_submit_answer = client.post(f'/answer-question?wordListId={TEST_LIST_ID}'
+    r_submit_answer = client.post(f'/answer-question?userWordListId={TEST_USER_LIST_ID}'
                                   f'&wordPickStrategy=dummy',
                                   headers=headers, json={"answers": answers})
 

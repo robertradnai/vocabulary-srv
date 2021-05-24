@@ -1,7 +1,7 @@
 from typing import List
 from yaml import load, Loader
 
-from vocabulary_srv.models import SharedListsResponse
+from vocabulary_srv.models import WordListMeta
 
 
 class WordListsElement:
@@ -15,7 +15,7 @@ class WordListsElement:
         self.word_list_id = word_list_id
 
 
-def show_shared_collections(shared_collections_metadata: str) -> List[SharedListsResponse]:
+def show_shared_collections(shared_collections_metadata: str) -> List[WordListMeta]:
 
     with open(shared_collections_metadata) as f:
         metadata_file_content = f.read()
@@ -26,14 +26,14 @@ def show_shared_collections(shared_collections_metadata: str) -> List[SharedList
     for collection in metadata['shared_collections_xlsx']:
         for word_list in collection["wordLists"]:
             word_lists.append(
-                SharedListsResponse(
-                    word_list_id=word_list["wordListId"],
+                WordListMeta(
+                    available_word_list_id=word_list["wordListId"],
                     word_list_display_name=word_list["wordListDisplayName"],
                     description=word_list["description"],
                     lang1=word_list["lang1"],
                     lang2=word_list["lang2"],
-                    is_cloned=False,
-                    cloned_list_id=-1,
+                    is_added_to_user_word_lists=False,
+                    user_word_list_id=None,
                     word_collection_name=collection["wordCollection"],
                     word_list_name=word_list["wordList"]
                 )
