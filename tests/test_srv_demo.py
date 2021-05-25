@@ -1,42 +1,32 @@
 from vocabulary_srv import create_app
 from vocabulary_srv.database import FeedbackStorage
 from flask.wrappers import Response
+import jwt
 
-TEST_AVAILABLE_LIST_ID = 1
-TEST_USER_LIST_ID = 1
-TEST_LIST_DISPLAY_NAME = "Short list for testing"
-TEST_LIST_LANG1 = "Finnish"
-TEST_LIST_LANG2 = "English"
+
 
 
 def test_config():
     assert create_app({'TESTING': True, "SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
 
 
-def test_demo_quiz(client):
+def run_test_cycle(client, chosen_available_word_list_id):
+
     r_list: Response = client.get('/shared-lists')
 
-    assert TEST_LIST_DISPLAY_NAME == r_list.json[0]["wordListDisplayName"]
-    assert TEST_AVAILABLE_LIST_ID == r_list.json[0]["availableWordListId"]
-    assert TEST_LIST_LANG1 == r_list.json[0]["lang1"]
-    assert TEST_LIST_LANG2 == r_list.json[0]["lang2"]
-
     r_register: Response = client.post('/register-guest')
-    assert 'guestJwt' in r_register.json
+    guest_jwt = r_register.json["guestJwt"]
 
-    guest_jwt = r_register.json['guestJwt']
+    r_clone_word_list = client.post(
+        f'/clone-word-list?availableWordListId={chosen_available_word_list_id}',
+        headers={'Guest-Authentication-Token': guest_jwt})
+    user_word_list_id = r_clone_word_list.json["userWordListId"]
+    assert type(user_word_list_id) is int
 
-    # https://werkzeug.palletsprojects.com/en/1.0.x/test/#werkzeug.test.EnvironBuilder
-    headers = {'Guest-Authentication-Token': guest_jwt}
+    r_quiz = client.post(f'/pick-question?userWordListId={user_word_list_id}'
+                         f'&wordPickStrategy=dummy',
+                         headers={'Guest-Authentication-Token': guest_jwt})
 
-    r_clone_word_list = client.post(f'/clone-word-list?availableWordListId={TEST_AVAILABLE_LIST_ID}', headers=headers)
-    assert type(r_clone_word_list.json["userWordListId"]) is int
-    assert TEST_USER_LIST_ID == r_clone_word_list.json["userWordListId"]
-
-    r_quiz = client.post(f'/pick-question?userWordListId={TEST_USER_LIST_ID}'
-                         f'&wordPickStrategy=dummy', headers=headers)
-
-    assert "quizList" in r_quiz.json
     quiz_list = r_quiz.json['quizList']
     for quiz in quiz_list:
         assert 'question' in quiz
@@ -47,13 +37,51 @@ def test_demo_quiz(client):
     answers = {2: True, 3: True, 4: True}
 
     # Submit batch answer
-    r_submit_answer = client.post(f'/answer-question?userWordListId={TEST_USER_LIST_ID}'
+    r_submit_answer = client.post(f'/answer-question?userWordListId={user_word_list_id}'
                                   f'&wordPickStrategy=dummy',
-                                  headers=headers, json={"answers": answers})
+                                  headers={'Guest-Authentication-Token': guest_jwt},
+                                  json={"answers": answers})
 
     # Verify if a few correct answers had an effect on the learning progress
     learning_progress = r_submit_answer.json['learningProgress']
     assert learning_progress > 0
+
+    test_data = {
+        "r_shared_lists": r_list,
+        "r_register": r_register,
+        "r_clone_word_list": r_clone_word_list,
+        "r_quiz": r_quiz,
+        "r_submit_answer": r_submit_answer
+    }
+    return test_data
+
+
+def test_demo_quiz(client):
+
+    chosen_available_word_list_id = 1
+    test_data = run_test_cycle(client, chosen_available_word_list_id)
+
+    test_available_list_id = 1
+    test_list_display_name = "Short list for testing"
+    test_list_lang1 = "Finnish"
+    test_list_lang2 = "English"
+
+    assert test_list_display_name == test_data["r_shared_lists"].json[0]["wordListDisplayName"]
+    assert test_available_list_id == test_data["r_shared_lists"].json[0]["availableWordListId"]
+    assert test_list_lang1 == test_data["r_shared_lists"].json[0]["lang1"]
+    assert test_list_lang2 == test_data["r_shared_lists"].json[0]["lang2"]
+
+    # Verify that the sessions and resources
+    # of two users aren't mixed up in the app
+    test_data_2 = run_test_cycle(client, 1)
+
+    assert not test_data["r_clone_word_list"].json["userWordListId"] \
+        == test_data_2["r_clone_word_list"].json["userWordListId"]
+
+    def get_user_id(test_data):
+        return jwt.decode(test_data["r_register"].json["guestJwt"],
+                          options={"verify_signature": False})
+    assert not get_user_id(test_data) == get_user_id(test_data_2)
 
 
 def test_raise_error(client):
