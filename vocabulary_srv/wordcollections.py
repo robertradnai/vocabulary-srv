@@ -10,14 +10,16 @@ from yaml import load, Loader
 
 class WordListsElement:
     def __init__(self, word_collection_name: str, word_list_name: str,
-                 word_collection_display_name: str, word_list_display_name: str):
+                 word_collection_display_name: str, word_list_display_name: str,
+                 word_list_id: int):
         self.word_collection_name = word_collection_name
         self.word_list_name = word_list_name
         self.word_collection_display_name = word_collection_display_name
         self.word_list_display_name = word_list_display_name
+        self.word_list_id = word_list_id
 
 
-def show_shared_collections(shared_collections_metadata: str):
+def show_shared_collections(shared_collections_metadata: str) -> List[WordListsElement]:
 
     with open(shared_collections_metadata) as f:
         metadata_file_content = f.read()
@@ -31,7 +33,8 @@ def show_shared_collections(shared_collections_metadata: str):
                 WordListsElement(word_collection_name=collection["wordCollection"],
                                  word_collection_display_name=collection["wordCollectionDisplayName"],
                                  word_list_name= word_list["wordList"],
-                                 word_list_display_name=word_list["wordListDisplayName"])
+                                 word_list_display_name=word_list["wordListDisplayName"],
+                                 word_list_id=word_list["wordListId"])
             )
 
     return word_lists

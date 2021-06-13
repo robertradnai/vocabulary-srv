@@ -48,6 +48,7 @@ class "POST /clone-word-list" {
 
 "GET /pick-questions" --> PickQuestionsResponse
 PickQuestionsResponse --> QuizEntry
+wordlistquiz --> QuizEntry
 
 class "GET /pick-questions" {
    .. query string ..
@@ -59,6 +60,7 @@ class "GET /pick-questions" {
 
 class PickQuestionsResponse {
     quiz_list: QuizEntry[]
+    learning_progress: int
 }
 
 class QuizEntry {
@@ -116,25 +118,37 @@ class "POST /login" {
 ' *****
 ' *****
 
-"GET /pick-questions" --> WordListLearningProgress
-"GET /pick-questions" --> WordListDaoDb
-"GET /pick-questions" --> QuizBuilder
+"GET /pick-questions" --> wordlistquiz
+"GET /pick-questions" --> WordList
+"GET /pick-questions" --> AlternativeAnswersRepository
 
 WordListDaoDb --> WordListLearningProgress
 WordListLearningProgress --> QuizBuilderInstructions
 
 
-class WordListLearningProgress {
-    {method} __init__(learning_progress: **FROM DAO**)
-    {method} configure_quiz(quiz_config: QuizConfig)
-    {method} pick_questions() -> QuizBuilderInstructions[]
-    {method} calculate_learning_progress() -> int
-    {method} reset_learning_progress()
-}
-
 class QuizBuilderInstructions {
     row_id: int
     flashcard_only: bool
+}
+
+class wordlistquiz {
+    .. functions ..
+    create_quiz_round(word_list, quiz_type) -> QuizEntry[]
+    get_learning_progress(word_list) -> int
+    reset_learning_progress(word_list) -> WordList
+    submit_answers(answers) -> WordList
+
+}
+
+class WordList {
+    lang1: str
+    lang2: str
+    flashcards: Flashcard[]
+    learning_progress: LearningProgress
+}
+
+class AlternativeAnswersRepository {
+    expressions: str[]
 }
 
 @enduml

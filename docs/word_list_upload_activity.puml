@@ -1,0 +1,18 @@
+@startuml
+start
+
+:Uploader exports new word list to CSV format;
+:U. copies the CSV file into the necessary folder;
+:U. adds metadata to metadata file:
+- displayed name of the vocabulary list,
+- name of the CSV file
+- the two languages of the bilingual
+  vocabulary list
+- date of upload/update
+;
+:The app reloads the metadata file,
+and the users can add this new
+vocabulary list;
+
+stop
+@enduml

@@ -59,10 +59,23 @@ def get_shared_lists():
         {"wordCollectionDisplayName": word_list_element.word_collection_display_name,
          "wordListDisplayName": word_list_element.word_list_display_name,
          "wordCollection": word_list_element.word_collection_name,
-         "wordList": word_list_element.word_list_name}
+         "wordList": word_list_element.word_list_name,
+         "wordListId": word_list_element.word_list_id}
         for word_list_element in word_list_elements]
 
     return jsonify(res)
+
+
+def get_collection_list_name_from_id(word_list_id: int):
+    word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
+                                                              current_app.config["SHARED_WORKBOOKS_METADATA"]))
+    word_list_id = int(request.args['wordListId'])
+    word_collection_index = [i for i, v in enumerate(word_list_elements)
+                             if v.word_list_id == word_list_id][0]
+
+    collection_name = word_list_elements[word_collection_index].word_collection_name
+    word_list_name = word_list_elements[word_collection_index].word_list_name
+    return collection_name, word_list_name
 
 
 @bp.route("/clone-word-list", methods=('POST',))
@@ -73,7 +86,12 @@ def clone_shared(guest_user_id: str):
         Validate the path of the word collection, then load it into the DB.
     """
 
-    collection_name = secure_filename(request.args['wordCollection'])
+    word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
+                                                              current_app.config["SHARED_WORKBOOKS_METADATA"]))
+    word_list_id = int(request.args['wordListId'])
+
+    collection_name, _ = get_collection_list_name_from_id(word_list_id)
+
     workbook_path = os.path.join(current_app.instance_path,
                                  current_app.config["SHARED_WORKBOOKS_PATH"],
                                  collection_name)
@@ -95,8 +113,8 @@ def clone_shared(guest_user_id: str):
 @inject_guest_user_id
 def pick_question(guest_user_id):
 
-    collection_name = secure_filename(request.args["wordCollection"])
-    list_name = request.args["wordList"]
+    word_list_id = int(request.args['wordListId'])
+    collection_name, list_name = get_collection_list_name_from_id(word_list_id)
     pick_strategy = request.args["wordPickStrategy"]
 
     # Getting the stored collection
@@ -136,14 +154,16 @@ def pick_question(guest_user_id):
 
         quiz_entries.append(quiz_entry.__dict__)
 
-    return jsonify(PickQuestionsResponse(quiz_list=quiz_entries).to_dict())
+    learning_progress = voc.get_progress(list_name)
+    return jsonify(PickQuestionsResponse(quiz_list=quiz_entries,
+                                         learning_progress=learning_progress).to_dict())
 
 
 @bp.route('/answer-question', methods=('POST',))
 @inject_guest_user_id
 def answer_question(guest_user_id):
-    collection_name = secure_filename(request.args["wordCollection"])
-    list_name = request.args["wordList"]
+    word_list_id = int(request.args['wordListId'])
+    collection_name, list_name = get_collection_list_name_from_id(word_list_id)
     answers = request.json["answers"]
 
 
