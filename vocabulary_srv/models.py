@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json, LetterCase
+from datetime import datetime
 
-from typing import List
+from typing import List, Optional
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
@@ -38,3 +39,25 @@ class QuizEntry:
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]
     learning_progress: int
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class WordListMeta:
+    available_word_list_id: int
+    word_list_display_name: str
+    description: str
+    lang1: str
+    lang2: str
+    is_added_to_user_word_lists: bool
+    user_word_list_id: Optional[int]
+    word_collection_name: str
+    word_list_name: str
+
+
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass
+class UserWordListMeta(WordListMeta):
+    progress: float
+    created_at: datetime
+    last_opened_at: datetime
