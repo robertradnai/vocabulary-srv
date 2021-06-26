@@ -1,5 +1,5 @@
 from typing import List
-from yaml import load, Loader
+import yaml
 
 from vocabulary_srv.models import WordListMeta
 
@@ -20,7 +20,7 @@ def show_shared_collections(shared_collections_metadata: str) -> List[WordListMe
     with open(shared_collections_metadata) as f:
         metadata_file_content = f.read()
 
-    metadata = load(metadata_file_content, Loader=Loader)
+    metadata = yaml.load(metadata_file_content, Loader=yaml.Loader)
 
     word_lists = []
     for collection in metadata['shared_collections_xlsx']:
