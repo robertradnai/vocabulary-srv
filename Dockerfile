@@ -11,7 +11,8 @@ RUN pip install -r requirements.txt
 # Installing vocabulary_srv from Github (and not from the local project folder)
 RUN pip install git+https://github.com/robertradnai/vocabulary-srv.git@$COMMIT_HASH#egg=vocabulary_srv
 
-# Copying starter scripts
-COPY scripts/srv_start_gunicorn.sh /starter_scripts/srv_start_gunicorn.sh
+ENV FLASK_CONFIG_PATH=/config/appconfig.py
+ENV FLASK_APP="vocabulary_srv:create_app(None, '${FLASK_CONFIG_PATH}')"
+ENV FLASK_ENV=production
 
-CMD ["bash", "/starter_scripts/srv_start_gunicorn.sh"]
+CMD gunicorn -w 4 -b 127.0.0.1:$PORT "$FLASK_APP"
