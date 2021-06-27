@@ -51,8 +51,6 @@ class WordListMeta:
     lang2: str
     is_added_to_user_word_lists: bool
     user_word_list_id: Optional[int]
-    word_collection_name: str
-    word_list_name: str
     csv_filename: str
 
 

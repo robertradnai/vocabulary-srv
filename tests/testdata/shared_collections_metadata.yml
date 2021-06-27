@@ -5,8 +5,6 @@
   lang1: Finnish
   lang2: English
   csv_filename: testdict_shorttest.csv
-  depr_word_collection: testdict.xlsx
-  depr_word_list: shorttest
 
 - available_word_list_id: 2
   word_list_display_name: Vocabulary 1
@@ -14,5 +12,3 @@
   lang1: Finnish
   lang2: English
   csv_filename: testdict_vocabulary1.csv
-  depr_word_collection: testdict.xlsx
-  depr_word_list: Vocabulary 1
