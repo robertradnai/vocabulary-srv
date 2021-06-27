@@ -1,6 +1,8 @@
 from random import randint
 
 import jwt
+import uuid
+import datetime
 
 
 class GuestUser:
@@ -18,7 +20,9 @@ class GuestUser:
 class GuestUserFactory:
     @staticmethod
     def generate() -> GuestUser:
-        return GuestUser(str(randint(0, 100000)), "2020-10-15 12:34:00")
+        expires_at = (datetime.datetime.now().replace(microsecond=0)
+                      + datetime.timedelta(hours=2))
+        return GuestUser(str(uuid.uuid1()), expires_at.isoformat())
 
     @staticmethod
     def from_jwt(jwt_string: str, secret_key: str) -> GuestUser:

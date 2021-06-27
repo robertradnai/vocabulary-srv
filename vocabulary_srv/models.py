@@ -38,7 +38,7 @@ class QuizEntry:
 @dataclass
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]
-    learning_progress: int
+    learning_progress: float
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
@@ -53,6 +53,7 @@ class WordListMeta:
     user_word_list_id: Optional[int]
     word_collection_name: str
     word_list_name: str
+    csv_filename: str
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
