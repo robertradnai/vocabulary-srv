@@ -13,6 +13,31 @@ class WordCollections(db.Model):
     available_word_list_id = db.Column(db.Integer)
 
 
+class WordLists(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    is_addable = db.Column(db.Boolean(), index=True)
+    available_word_list_id = db.Column(db.Integer, index=True)
+    word_list_display_name = db.Column(db.String)
+    description = db.Column(db.String)
+    lang1 = db.Column(db.String)
+    lang2 = db.Column(db.String)
+    user_id = db.Column(db.String, nullable=False)
+    word_list_json = db.Column(db.UnicodeText())
+    learning_progress_json = db.Column(db.UnicodeText())
+
+    """
+    TODO add these:
+    
+    available_word_list_id: int
+    word_list_display_name: str
+    description: str
+    lang1: str
+    lang2: str
+    is_added_to_user_word_lists: bool
+    --- user_word_list_id: Optional[int]
+    """
+
+
 class Feedback(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     submitted_at = db.Column(db.DateTime)
