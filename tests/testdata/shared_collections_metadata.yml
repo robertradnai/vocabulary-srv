@@ -1,14 +1,18 @@
-{
-  "shared_collections_xlsx": [
-    {
-      "wordCollection": "testdict.xlsx",
-      "wordCollectionDisplayName": "Finnish - English test",
-      "wordLists": [
-        {"wordList": "shorttest", "wordListDisplayName": "Short list for testing", "wordListId": 1,
-        "lang1": "Finnish", "lang2": "English", "description": "Word list description goes here"},
-        {"wordList": "Vocabulary 1", "wordListDisplayName": "Vocabulary 1", "wordListId": 2,
-         "lang1": "Finnish", "lang2": "English", "description": "Word list description goes here"}
-      ]
-    }
-  ]
-}
+---
+- available_word_list_id: 1
+  word_list_display_name: Short list for testing
+  description: Word list description goes here
+  lang1: Finnish
+  lang2: English
+  csv_file:
+  depr_word_collection: testdict.xlsx
+  depr_word_list: shorttest
+
+- available_word_list_id: 2
+  word_list_display_name: Vocabulary 1
+  description: Word list description goes here
+  lang1: Finnish
+  lang2: English
+  csv_file:
+  depr_word_collection: testdict.xlsx
+  depr_word_list: Vocabulary 1
