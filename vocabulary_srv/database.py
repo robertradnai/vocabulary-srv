@@ -5,8 +5,12 @@ import click
 from flask import g
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
+from vocabulary import WordList
+from vocabulary.dataaccess import build_word_list, save_word_list_learning_progress_json
 
 from vocabulary_srv.dataaccess import IWordCollectionsDao
+from vocabulary_srv.models import WordListMeta
+
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -88,6 +92,49 @@ class DbWordCollectionStorage(IWordCollectionsDao):
             return None
         else:
             return entry.user_word_list_id
+
+
+class DbWordListStorage:
+
+    def create_item(self, word_list_meta: WordListMeta, csv_str: str, user_id: str, is_addable: bool) -> int:
+        from .dbmodels import WordListsTable
+
+        entry = WordListsTable(
+            is_addable=is_addable,
+            available_word_list_id=word_list_meta.available_word_list_id,
+            word_list_display_name=word_list_meta.word_list_display_name,
+            description=word_list_meta.description,
+            lang1=word_list_meta.lang1,
+            lang2=word_list_meta.lang2,
+            user_id=user_id,
+            flashcards_csv=csv_str,
+            learning_progress_json=None
+        )
+
+        db.session.add(entry)
+        db.session.commit()
+        return entry.id
+
+    def get_word_list(self, user_word_list_id, user_id) -> WordList:
+        from .dbmodels import WordListsTable
+        entry = WordListsTable \
+            .query.filter_by(id=user_word_list_id, user_id=user_id).first()
+
+        word_list = build_word_list(lang1=entry.lang1,
+                                    lang2=entry.lang2,
+                                    flashcards_csv_str=entry.flashcards_csv)
+
+        return word_list
+
+    def update_learning_progress(self, user_word_list_id, user_id, word_list: WordList):
+        from .dbmodels import WordListsTable
+        entry = WordListsTable \
+            .query.filter_by(id=user_word_list_id, user_id=user_id).first()
+
+        entry.learning_progress_json = \
+            save_word_list_learning_progress_json(word_list.learning_progress_codes)
+
+        db.session.commit()
 
 
 class FeedbackStorage:

@@ -4,7 +4,7 @@
   description: Word list description goes here
   lang1: Finnish
   lang2: English
-  csv_file:
+  csv_filename: testdict_shorttest.csv
   depr_word_collection: testdict.xlsx
   depr_word_list: shorttest
 
@@ -13,6 +13,6 @@
   description: Word list description goes here
   lang1: Finnish
   lang2: English
-  csv_file:
+  csv_filename: testdict_vocabulary1.csv
   depr_word_collection: testdict.xlsx
   depr_word_list: Vocabulary 1

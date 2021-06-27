@@ -3,15 +3,17 @@ import os
 from typing import List, Optional
 
 from flask import Blueprint, jsonify, request, current_app, Response
+from vocabulary.wordlistquiz import create_quiz_round, submit_answers
 from werkzeug.exceptions import HTTPException
 from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary.dataaccess import load_wordlist_book
 from vocabulary.stateless import Vocabulary
+from vocabulary.dataaccess import build_word_list
 
 from vocabulary_srv.models import WordListMeta, UserWordListMeta
 from vocabulary_srv.wordcollections import get_storage_element_id, show_shared_collections
-from vocabulary_srv import get_word_collection_storage
+from vocabulary_srv import get_word_collection_storage, get_word_lists_dao
 from vocabulary_srv.user import GuestUserFactory
 from vocabulary_srv.database import FeedbackStorage
 
@@ -87,9 +89,24 @@ def clone_shared(guest_user_id: str):
 
     if user_word_list_id is None:
 
+        # TODO connect this new piece of code
+        word_list_csv_path = os.path.join(current_app.instance_path,
+                                          current_app.config["SHARED_WORKBOOKS_PATH"],
+                                          word_list_meta.csv_filename)
+        if not os.path.exists(word_list_csv_path):
+            return Response(status=400)
+
+        with open(word_list_csv_path) as f:
+            flashcards_csv_str = f.read()
+        word_list = build_word_list("Finnish", "English", flashcards_csv_str)
+
+        get_word_lists_dao().create_item(word_list_meta, flashcards_csv_str, guest_user_id, False)
+
+        # ####### end of new code
+
         workbook_path = os.path.join(current_app.instance_path,
-                                     current_app.config["SHARED_WORKBOOKS_PATH"],
-                                     word_list_meta.word_collection_name)
+                                         current_app.config["SHARED_WORKBOOKS_PATH"],
+                                         word_list_meta.word_collection_name)
         if not os.path.exists(workbook_path):
             return Response(status=400)
 
@@ -112,6 +129,21 @@ def pick_question(guest_user_id):
 
     user_word_list_id = int(request.args["userWordListId"])
     pick_strategy = request.args["wordPickStrategy"]
+
+    # TODO new code
+    word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
+    if word_list is None:
+        raise LookupError("Word list doesn't exist with the given user id and word list id")
+
+    def generate_alternatives(word_list):
+        alternatives = []
+        for _, flashcard in word_list.flashcards.items():
+            alternatives.append(flashcard.lang1)
+        return alternatives
+
+    quiz_round = create_quiz_round(word_list, "", generate_alternatives(word_list))
+
+    # #### end of new code
 
     (voc, stored_user_id) = get_word_collection_storage().get_item(user_word_list_id)
     if not stored_user_id == guest_user_id:
@@ -183,6 +215,17 @@ def answer_question(guest_user_id):
                                                   word_list_meta.word_collection_name,
                                                   word_list_meta.word_list_name)
     """
+
+    # TODO new code
+    word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
+
+    answers_int = {int(k): v for k, v in answers.items()}
+    word_list_updated = submit_answers(word_list, answers_int)
+
+    get_word_lists_dao().update_learning_progress(
+        user_word_list_id, guest_user_id, word_list_updated)
+
+    # #### End of new code
 
     (voc, stored_user_id) = get_word_collection_storage().get_item(user_word_list_id)
     if not stored_user_id == guest_user_id:
