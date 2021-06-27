@@ -33,8 +33,6 @@ def show_shared_collections(shared_collections_metadata: str) -> List[WordListMe
                 lang2=metadata_entry["lang2"],
                 is_added_to_user_word_lists=False,
                 user_word_list_id=None,
-                word_collection_name=metadata_entry["depr_word_collection"],
-                word_list_name=metadata_entry["depr_word_list"],
                 csv_filename=metadata_entry["csv_filename"]
             )
         )
