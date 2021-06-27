@@ -3,17 +3,14 @@ import os
 from typing import List, Optional
 
 from flask import Blueprint, jsonify, request, current_app, Response
+from vocabulary import wordlistquiz
 from vocabulary.wordlistquiz import create_quiz_round, submit_answers
 from werkzeug.exceptions import HTTPException
 from wtforms import Form, StringField, BooleanField, validators
 
-from vocabulary.dataaccess import load_wordlist_book
-from vocabulary.stateless import Vocabulary
-from vocabulary.dataaccess import build_word_list
-
-from vocabulary_srv.models import WordListMeta, UserWordListMeta
-from vocabulary_srv.wordcollections import get_storage_element_id, show_shared_collections
-from vocabulary_srv import get_word_collection_storage, get_word_lists_dao
+from vocabulary_srv.models import WordListMeta, PickQuestionsResponse
+from vocabulary_srv.wordcollections import show_shared_collections
+from vocabulary_srv import get_word_lists_dao
 from vocabulary_srv.user import GuestUserFactory
 from vocabulary_srv.database import FeedbackStorage
 
@@ -84,12 +81,11 @@ def clone_shared(guest_user_id: str):
 
     available_word_list_id = int(request.args['availableWordListId'])
     word_list_meta = get_word_list_meta_from_id(available_word_list_id)
-    user_word_list_id: Optional[int] = get_word_collection_storage() \
+
+    user_word_list_id: Optional[int] = get_word_lists_dao() \
         .get_already_existing_user_word_list_id(guest_user_id, available_word_list_id)
 
     if user_word_list_id is None:
-
-        # TODO connect this new piece of code
         word_list_csv_path = os.path.join(current_app.instance_path,
                                           current_app.config["SHARED_WORKBOOKS_PATH"],
                                           word_list_meta.csv_filename)
@@ -98,28 +94,10 @@ def clone_shared(guest_user_id: str):
 
         with open(word_list_csv_path) as f:
             flashcards_csv_str = f.read()
-        word_list = build_word_list("Finnish", "English", flashcards_csv_str)
 
-        get_word_lists_dao().create_item(word_list_meta, flashcards_csv_str, guest_user_id, False)
+        word_list_meta.user_word_list_id = get_word_lists_dao() \
+            .create_item(word_list_meta, flashcards_csv_str, guest_user_id, False)
 
-        # ####### end of new code
-
-        workbook_path = os.path.join(current_app.instance_path,
-                                         current_app.config["SHARED_WORKBOOKS_PATH"],
-                                         word_list_meta.word_collection_name)
-        if not os.path.exists(workbook_path):
-            return Response(status=400)
-
-        voc = Vocabulary()
-        voc.load(workbook_path, load_wordlist_book)
-
-        for word_list in voc.get_word_sheet_list():
-            voc.reset_progress(word_list)
-        voc.selected_word_list_name = word_list_meta.word_list_name
-        user_word_list_id: int = get_word_collection_storage() \
-            .create_item(guest_user_id, voc, available_word_list_id)
-
-    word_list_meta.user_word_list_id = user_word_list_id
     return jsonify(word_list_meta.to_dict())
 
 
@@ -130,7 +108,6 @@ def pick_question(guest_user_id):
     user_word_list_id = int(request.args["userWordListId"])
     pick_strategy = request.args["wordPickStrategy"]
 
-    # TODO new code
     word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
     if word_list is None:
         raise LookupError("Word list doesn't exist with the given user id and word list id")
@@ -141,60 +118,9 @@ def pick_question(guest_user_id):
             alternatives.append(flashcard.lang1)
         return alternatives
 
-    quiz_round = create_quiz_round(word_list, "", generate_alternatives(word_list))
+    quiz_entries = create_quiz_round(word_list, pick_strategy, generate_alternatives(word_list))
+    learning_progress = wordlistquiz.get_learning_progress(word_list)
 
-    # #### end of new code
-
-    (voc, stored_user_id) = get_word_collection_storage().get_item(user_word_list_id)
-    if not stored_user_id == guest_user_id:
-        raise PermissionError("User has no right to access this word list")
-
-    """
-    word_list_id = int(request.args['wordListId'])
-    word_list_meta = get_word_list_meta_from_id(word_list_id)
-    
-
-    # Getting the stored collection
-    storage_id = get_storage_element_id(guest_user_id, word_list_meta.word_collection_name,
-                                        word_list_meta.word_list_name)
-    voc: Vocabulary = get_word_collection_storage().get_item(storage_id)
-    """
-
-    from .models import QuizEntry, Flashcard, MultipleChoiceQuiz
-    from vocabulary_srv.models import PickQuestionsResponse
-
-    # Fetching a question and the learning progress
-    quiz_list = voc.choice_quiz(voc.selected_word_list_name, pick_strategy)
-
-    quiz_entries = []
-
-    for quiz_entry_old in quiz_list:
-
-        if quiz_entry_old.question is not None:
-            choice_quiz = MultipleChoiceQuiz(
-                row_key=quiz_entry_old.question.row_key,
-                instruction_header=voc.word_collection.word_lists[voc.selected_word_list_name].lang2,
-                instruction_content=quiz_entry_old.flashcard.lang2,
-                options_header="{} - how would you translate?".format(
-                    voc.word_collection.word_lists[voc.selected_word_list_name].lang1),
-                options=quiz_entry_old.question.options,
-                correct_answer_indices=[2])
-            # TODO assign real value to correct_answer_indices
-        else:
-            choice_quiz = None
-
-        quiz_entry = QuizEntry(
-            question=choice_quiz,
-            flashcard=Flashcard(lang1=quiz_entry_old.flashcard.lang1,
-                                lang2=quiz_entry_old.flashcard.lang2,
-                                remarks=quiz_entry_old.flashcard.remarks,
-                                lang1_header=voc.word_collection.word_lists[voc.selected_word_list_name].lang1,
-                                lang2_header=voc.word_collection.word_lists[voc.selected_word_list_name].lang2,
-                                remarks_header="Remarks"))
-
-        quiz_entries.append(quiz_entry.__dict__)
-
-    learning_progress = voc.get_progress(voc.selected_word_list_name)
     return jsonify(PickQuestionsResponse(quiz_list=quiz_entries,
                                          learning_progress=learning_progress).to_dict())
 
@@ -206,38 +132,14 @@ def answer_question(guest_user_id):
     user_word_list_id = int(request.args["userWordListId"])
     answers = request.json["answers"]
 
-    """
-    word_list_id = int(request.args['wordListId'])
-    word_list_meta = get_word_list_meta_from_id(word_list_id)
-    
-
-    stored_collection_id = get_storage_element_id(guest_user_id,
-                                                  word_list_meta.word_collection_name,
-                                                  word_list_meta.word_list_name)
-    """
-
-    # TODO new code
     word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
 
     answers_int = {int(k): v for k, v in answers.items()}
     word_list_updated = submit_answers(word_list, answers_int)
+    learning_progress = wordlistquiz.get_learning_progress(word_list_updated)
 
     get_word_lists_dao().update_learning_progress(
         user_word_list_id, guest_user_id, word_list_updated)
-
-    # #### End of new code
-
-    (voc, stored_user_id) = get_word_collection_storage().get_item(user_word_list_id)
-    if not stored_user_id == guest_user_id:
-        raise PermissionError("User has no right to access this word list")
-
-    for row_key, is_correct in answers.items():
-        voc.update_progress(voc.selected_word_list_name, int(row_key), is_correct)
-
-    # Return learning progress for the word list
-    learning_progress = voc.get_progress(voc.selected_word_list_name)
-
-    get_word_collection_storage().update_item(user_word_list_id, voc)
 
     res = {"learningProgress": learning_progress}
 

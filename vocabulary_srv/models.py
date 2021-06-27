@@ -38,7 +38,7 @@ class QuizEntry:
 @dataclass
 class PickQuestionsResponse:
     quiz_list: List[QuizEntry]
-    learning_progress: int
+    learning_progress: float
 
 
 @dataclass_json(letter_case=LetterCase.CAMEL)

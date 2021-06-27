@@ -5,7 +5,7 @@ from flask import Flask, jsonify, g
 
 from vocabulary_srv.dataaccess import IWordCollectionsDao
 from .database import db
-from .database import init_db, init_app, DbWordCollectionStorage, DbWordListStorage
+from .database import init_db, init_app, DbWordListStorage
 
 dictConfig({
     'version': 1,
@@ -92,12 +92,6 @@ def create_app(test_config=None, config_filename=None):
     init_app(app) # Register database command for flask
 
     return app
-
-
-def get_word_collection_storage() -> IWordCollectionsDao:
-    if "storage_mgr" not in g:
-        g.storage_mgr = DbWordCollectionStorage()
-    return g.storage_mgr
 
 
 def get_word_lists_dao():

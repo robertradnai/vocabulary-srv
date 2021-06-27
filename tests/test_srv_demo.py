@@ -31,8 +31,9 @@ def run_test_cycle(client, chosen_available_word_list_id):
     for quiz in quiz_list:
         assert 'question' in quiz
         assert 'flashcard' in quiz
-        assert "lang1Header" in quiz["flashcard"]
-        assert "lang2Header" in quiz["flashcard"]
+        if quiz["flashcard"] is not None:
+            assert "lang1Header" in quiz["flashcard"]
+            assert "lang2Header" in quiz["flashcard"]
 
     answers = {2: True, 3: True, 4: True}
 
