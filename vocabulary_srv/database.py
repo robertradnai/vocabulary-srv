@@ -80,7 +80,8 @@ class DbWordListStorage:
 
         word_list = build_word_list_csv(lang1=entry.lang1,
                                     lang2=entry.lang2,
-                                    flashcards_csv_str=entry.flashcards_csv)
+                                    flashcards_csv_str=entry.flashcards_csv,
+                                    learning_progress_json_str=entry.learning_progress_json)
 
         return word_list
 
@@ -88,6 +89,9 @@ class DbWordListStorage:
         from .dbmodels import WordListsTable
         entry = WordListsTable \
             .query.filter_by(id=user_word_list_id, user_id=user_id).first()
+
+        if entry is None:
+            raise LookupError("Word list doesn't exist with the given user id and word list id")
 
         entry.learning_progress_json = \
             save_word_list_learning_progress_json(word_list.learning_progress_codes)
