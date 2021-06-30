@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 import click
 from flask import g
@@ -9,8 +9,7 @@ from vocabulary import WordList
 from vocabulary.dataaccess import build_word_list_csv, save_word_list_learning_progress_json
 
 from vocabulary_srv.dataaccess import IWordCollectionsDao
-from vocabulary_srv.models import WordListMeta
-
+from vocabulary_srv.models import WordListMeta, UserWordListMeta
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -52,9 +51,24 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
+def build_user_word_list_meta(entry):
+    return UserWordListMeta(
+        available_word_list_id=entry.available_word_list_id,
+        word_list_display_name=entry.word_list_display_name,
+        description=entry.description,
+        lang1=entry.lang1,
+        lang2=entry.lang2,
+        is_added_to_user_word_lists=True,
+        user_word_list_id=entry.id,
+        csv_filename=None,
+        progress=0.0,
+        created_at=entry.created_at,
+        last_opened_at=entry.last_modified_at)
+
 class DbWordListStorage:
 
-    def create_item(self, word_list_meta: WordListMeta, csv_str: str, user_id: str, is_addable: bool) -> int:
+    def create_item(self, word_list_meta: WordListMeta, csv_str: str, user_id: str, is_addable: bool)\
+            -> UserWordListMeta:
         from .dbmodels import WordListsTable
 
         entry = WordListsTable(
@@ -71,7 +85,7 @@ class DbWordListStorage:
 
         db.session.add(entry)
         db.session.commit()
-        return entry.id
+        return build_user_word_list_meta(entry)
 
     def get_word_list(self, user_word_list_id, user_id) -> WordList:
         from .dbmodels import WordListsTable
@@ -79,11 +93,24 @@ class DbWordListStorage:
             .query.filter_by(id=user_word_list_id, user_id=user_id).first()
 
         word_list = build_word_list_csv(lang1=entry.lang1,
-                                    lang2=entry.lang2,
-                                    flashcards_csv_str=entry.flashcards_csv,
-                                    learning_progress_json_str=entry.learning_progress_json)
+                                        lang2=entry.lang2,
+                                        flashcards_csv_str=entry.flashcards_csv,
+                                        learning_progress_json_str=entry.learning_progress_json)
 
         return word_list
+
+    def get_user_word_lists(self, user_id, user_word_list_id=None, available_word_list_id=None)\
+            -> List[UserWordListMeta]:
+        from .dbmodels import WordListsTable
+
+        filters = {"user_id": user_id}
+        if user_word_list_id is not None:
+            filters["id"] = user_word_list_id
+        if available_word_list_id is not None:
+            filters["available_word_list_id"] = available_word_list_id
+
+        entries = WordListsTable .query.filter_by(**filters)
+        return [build_user_word_list_meta(entry) for entry in entries]
 
     def update_learning_progress(self, user_word_list_id, user_id, word_list: WordList):
         from .dbmodels import WordListsTable
@@ -97,17 +124,6 @@ class DbWordListStorage:
             save_word_list_learning_progress_json(word_list.learning_progress_codes)
 
         db.session.commit()
-
-    def get_already_existing_user_word_list_id(self, user_id, available_word_list_id) \
-            -> Optional[int]:
-        from .dbmodels import WordListsTable
-        entry = WordListsTable \
-            .query.filter_by(available_word_list_id=available_word_list_id, user_id=user_id).first()
-
-        if entry is None:
-            return None
-        else:
-            return entry.id
 
 
 class FeedbackStorage:

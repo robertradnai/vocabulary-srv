@@ -80,12 +80,14 @@ def clone_shared(guest_user_id: str):
     """
 
     available_word_list_id = int(request.args['availableWordListId'])
-    word_list_meta = get_word_list_meta_from_id(available_word_list_id)
 
-    user_word_list_id: Optional[int] = get_word_lists_dao() \
-        .get_already_existing_user_word_list_id(guest_user_id, available_word_list_id)
+    user_lists_query = get_word_lists_dao() \
+        .get_user_word_lists(user_id=guest_user_id,
+                             available_word_list_id=available_word_list_id)
+    word_list_already_added = bool(len(user_lists_query))
 
-    if user_word_list_id is None:
+    if not word_list_already_added:
+        word_list_meta = get_word_list_meta_from_id(available_word_list_id)
         word_list_csv_path = os.path.join(current_app.instance_path,
                                           current_app.config["SHARED_WORKBOOKS_PATH"],
                                           word_list_meta.csv_filename)
@@ -95,10 +97,19 @@ def clone_shared(guest_user_id: str):
         with open(word_list_csv_path) as f:
             flashcards_csv_str = f.read()
 
-        word_list_meta.user_word_list_id = get_word_lists_dao() \
+        user_word_list_meta = get_word_lists_dao() \
             .create_item(word_list_meta, flashcards_csv_str, guest_user_id, False)
+    else:
+        user_word_list_meta = user_lists_query[0]
 
-    return jsonify(word_list_meta.to_dict())
+    return jsonify(user_word_list_meta.to_dict())
+
+
+@bp.route('/user-lists', methods=('GET',))
+@inject_guest_user_id
+def get_user_lists(guest_user_id: str):
+    user_lists = get_word_lists_dao().get_user_word_lists(guest_user_id)
+    return jsonify([user_list.to_dict() for user_list in user_lists])
 
 
 @bp.route('/pick-question', methods=('POST', 'GET'))

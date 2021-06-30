@@ -23,6 +23,9 @@ def run_test_cycle(client, chosen_available_word_list_id):
     user_word_list_id = r_clone_word_list.json["userWordListId"]
     assert type(user_word_list_id) is int
 
+    r_get_user_lists = client.get(
+        f'/user-lists', headers={'Guest-Authentication-Token': guest_jwt})
+
     r_quiz = client.post(f'/pick-question?userWordListId={user_word_list_id}'
                          f'&wordPickStrategy=dummy',
                          headers={'Guest-Authentication-Token': guest_jwt})
