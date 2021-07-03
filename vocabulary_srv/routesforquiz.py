@@ -59,6 +59,14 @@ def get_shared_lists():
                     in word_list_elements])
 
 
+@bp.route('/user-lists', methods=('GET',))
+@inject_guest_user_id
+def get_user_lists(guest_user_id: str):
+    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=guest_user_id)
+    return jsonify([entry.meta.to_dict() for entry in word_list_entries])
+    # TODO the output is not properly tested!
+
+
 def get_available_list_meta_from_id(word_list_id: int) -> WordListMeta:
     word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
                                                               current_app.config["SHARED_WORKBOOKS_METADATA"]))
@@ -103,14 +111,6 @@ def clone_shared(guest_user_id: str):
         user_list_meta = user_lists_query[0].meta
 
     return jsonify(user_list_meta.to_dict())
-
-
-@bp.route('/user-lists', methods=('GET',))
-@inject_guest_user_id
-def get_user_lists(guest_user_id: str):
-    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=guest_user_id)
-    return jsonify([entry.meta.to_dict() for entry in word_list_entries])
-    # TODO the output is not properly tested!
 
 
 @bp.route('/pick-question', methods=('POST', 'GET'))
