@@ -5,11 +5,11 @@ import click
 from flask import g
 from flask.cli import with_appcontext
 from flask_sqlalchemy import SQLAlchemy
-from vocabulary import WordList
+from vocabulary import WordList, wordlistquiz
 from vocabulary.dataaccess import build_word_list_csv, save_word_list_learning_progress_json
 
 from vocabulary_srv.dataaccess import IWordCollectionsDao
-from vocabulary_srv.models import WordListMeta, UserWordListMeta
+from vocabulary_srv.models import WordListMeta, UserWordListMeta, WordListEntry
 
 db: SQLAlchemy = SQLAlchemy()
 
@@ -51,8 +51,14 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-def build_user_word_list_meta(entry):
-    return UserWordListMeta(
+def build_word_list_entry(entry):
+
+    word_list = build_word_list_csv(lang1=entry.lang1,
+                                    lang2=entry.lang2,
+                                    flashcards_csv_str=entry.flashcards_csv,
+                                    learning_progress_json_str=entry.learning_progress_json)
+
+    meta = UserWordListMeta(
         available_word_list_id=entry.available_word_list_id,
         word_list_display_name=entry.word_list_display_name,
         description=entry.description,
@@ -61,17 +67,22 @@ def build_user_word_list_meta(entry):
         is_added_to_user_word_lists=True,
         user_word_list_id=entry.id,
         csv_filename=None,
-        progress=0.0,
+        progress=wordlistquiz.get_learning_progress(word_list),
         created_at=entry.created_at,
         last_opened_at=entry.last_modified_at)
 
+    return WordListEntry(word_list=word_list, meta=meta)
+
+
 class DbWordListStorage:
+    def __init__(self):
+        from .dbmodels import WordListsTable
+        self.word_lists_table = WordListsTable
 
     def create_item(self, word_list_meta: WordListMeta, csv_str: str, user_id: str, is_addable: bool)\
             -> UserWordListMeta:
-        from .dbmodels import WordListsTable
 
-        entry = WordListsTable(
+        entry = self.word_lists_table(
             is_addable=is_addable,
             available_word_list_id=word_list_meta.available_word_list_id,
             word_list_display_name=word_list_meta.word_list_display_name,
@@ -85,23 +96,10 @@ class DbWordListStorage:
 
         db.session.add(entry)
         db.session.commit()
-        return build_user_word_list_meta(entry)
+        return build_word_list_entry(entry).meta
 
-    def get_word_list(self, user_word_list_id, user_id) -> WordList:
-        from .dbmodels import WordListsTable
-        entry = WordListsTable \
-            .query.filter_by(id=user_word_list_id, user_id=user_id).first()
-
-        word_list = build_word_list_csv(lang1=entry.lang1,
-                                        lang2=entry.lang2,
-                                        flashcards_csv_str=entry.flashcards_csv,
-                                        learning_progress_json_str=entry.learning_progress_json)
-
-        return word_list
-
-    def get_user_word_lists(self, user_id, user_word_list_id=None, available_word_list_id=None)\
-            -> List[UserWordListMeta]:
-        from .dbmodels import WordListsTable
+    def get_word_list_entries(self, user_id, user_word_list_id=None, available_word_list_id=None)\
+            -> List[WordListEntry]:
 
         filters = {"user_id": user_id}
         if user_word_list_id is not None:
@@ -109,12 +107,12 @@ class DbWordListStorage:
         if available_word_list_id is not None:
             filters["available_word_list_id"] = available_word_list_id
 
-        entries = WordListsTable .query.filter_by(**filters)
-        return [build_user_word_list_meta(entry) for entry in entries]
+        entries = self.word_lists_table .query.filter_by(**filters)
+        return [build_word_list_entry(entry) for entry in entries]
 
     def update_learning_progress(self, user_word_list_id, user_id, word_list: WordList):
-        from .dbmodels import WordListsTable
-        entry = WordListsTable \
+
+        entry = self.word_lists_table \
             .query.filter_by(id=user_word_list_id, user_id=user_id).first()
 
         if entry is None:

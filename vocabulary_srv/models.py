@@ -4,6 +4,8 @@ from datetime import datetime
 
 from typing import List, Optional
 
+from vocabulary import WordList
+
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
@@ -60,3 +62,9 @@ class UserWordListMeta(WordListMeta):
     progress: float
     created_at: datetime
     last_opened_at: datetime
+
+
+@dataclass
+class WordListEntry:
+    word_list: WordList
+    meta: UserWordListMeta
