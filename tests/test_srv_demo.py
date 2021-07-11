@@ -17,11 +17,30 @@ def run_test_cycle(client, chosen_available_word_list_id):
     r_register: Response = client.post('/register-guest')
     guest_jwt = r_register.json["guestJwt"]
 
+    # Adding the word list twice should result in only one added list
+    client.post(
+        f'/clone-word-list?availableWordListId={chosen_available_word_list_id}',
+        headers={'Guest-Authentication-Token': guest_jwt})
+
     r_clone_word_list = client.post(
         f'/clone-word-list?availableWordListId={chosen_available_word_list_id}',
         headers={'Guest-Authentication-Token': guest_jwt})
     user_word_list_id = r_clone_word_list.json["userWordListId"]
     assert type(user_word_list_id) is int
+
+    r_get_user_lists = client.get(
+        f'/user-lists', headers={'Guest-Authentication-Token': guest_jwt})
+
+    assert 1 == len(r_get_user_lists.json)
+    assert user_word_list_id == r_get_user_lists.json[0]["userWordListId"]
+
+    # Adding another word list
+    client.post(
+        f'/clone-word-list?availableWordListId=2',
+        headers={'Guest-Authentication-Token': guest_jwt})
+    r_get_user_lists_2 = client.get(
+        f'/user-lists', headers={'Guest-Authentication-Token': guest_jwt})
+    assert 2 == len(r_get_user_lists_2.json)
 
     r_quiz = client.post(f'/pick-question?userWordListId={user_word_list_id}'
                          f'&wordPickStrategy=dummy',

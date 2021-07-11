@@ -8,7 +8,7 @@ from vocabulary.wordlistquiz import create_quiz_round, submit_answers
 from werkzeug.exceptions import HTTPException
 from wtforms import Form, StringField, BooleanField, validators
 
-from vocabulary_srv.models import WordListMeta, PickQuestionsResponse
+from vocabulary_srv.models import WordListMeta, PickQuestionsResponse, WordListEntry
 from vocabulary_srv.wordcollections import show_shared_collections
 from vocabulary_srv import get_word_lists_dao
 from vocabulary_srv.user import GuestUserFactory
@@ -59,7 +59,15 @@ def get_shared_lists():
                     in word_list_elements])
 
 
-def get_word_list_meta_from_id(word_list_id: int) -> WordListMeta:
+@bp.route('/user-lists', methods=('GET',))
+@inject_guest_user_id
+def get_user_lists(guest_user_id: str):
+    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=guest_user_id)
+    return jsonify([entry.meta.to_dict() for entry in word_list_entries])
+    # TODO the output is not properly tested!
+
+
+def get_available_list_meta_from_id(word_list_id: int) -> WordListMeta:
     word_list_elements = show_shared_collections(os.path.join(current_app.instance_path,
                                                               current_app.config["SHARED_WORKBOOKS_METADATA"]))
     word_collection_index = [i for i, v in enumerate(word_list_elements)
@@ -80,25 +88,29 @@ def clone_shared(guest_user_id: str):
     """
 
     available_word_list_id = int(request.args['availableWordListId'])
-    word_list_meta = get_word_list_meta_from_id(available_word_list_id)
 
-    user_word_list_id: Optional[int] = get_word_lists_dao() \
-        .get_already_existing_user_word_list_id(guest_user_id, available_word_list_id)
+    user_lists_query: List[WordListEntry] = get_word_lists_dao() \
+        .get_word_list_entries(user_id=guest_user_id,
+                               available_word_list_id=available_word_list_id)
+    word_list_already_added = bool(len(user_lists_query))
 
-    if user_word_list_id is None:
+    if not word_list_already_added:
+        available_list_meta = get_available_list_meta_from_id(available_word_list_id)
         word_list_csv_path = os.path.join(current_app.instance_path,
                                           current_app.config["SHARED_WORKBOOKS_PATH"],
-                                          word_list_meta.csv_filename)
+                                          available_list_meta.csv_filename)
         if not os.path.exists(word_list_csv_path):
             return Response(status=400)
 
         with open(word_list_csv_path) as f:
             flashcards_csv_str = f.read()
 
-        word_list_meta.user_word_list_id = get_word_lists_dao() \
-            .create_item(word_list_meta, flashcards_csv_str, guest_user_id, False)
+        user_list_meta = get_word_lists_dao() \
+            .create_item(available_list_meta, flashcards_csv_str, guest_user_id, False)
+    else:
+        user_list_meta = user_lists_query[0].meta
 
-    return jsonify(word_list_meta.to_dict())
+    return jsonify(user_list_meta.to_dict())
 
 
 @bp.route('/pick-question', methods=('POST', 'GET'))
@@ -108,7 +120,9 @@ def pick_question(guest_user_id):
     user_word_list_id = int(request.args["userWordListId"])
     pick_strategy = request.args["wordPickStrategy"]
 
-    word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
+    word_list = get_word_lists_dao().get_word_list_entries(
+        user_word_list_id=user_word_list_id, user_id=guest_user_id)[0].word_list
+
     if word_list is None:
         raise LookupError("Word list doesn't exist with the given user id and word list id")
 
@@ -130,12 +144,12 @@ def pick_question(guest_user_id):
 def answer_question(guest_user_id):
 
     user_word_list_id = int(request.args["userWordListId"])
-    answers = request.json["answers"]
+    answers = {int(k): v for k, v in request.json["answers"].items()}
 
-    word_list = get_word_lists_dao().get_word_list(user_word_list_id, guest_user_id)
+    word_list = get_word_lists_dao().get_word_list_entries(
+        user_word_list_id=user_word_list_id, user_id=guest_user_id)[0].word_list
 
-    answers_int = {int(k): v for k, v in answers.items()}
-    word_list_updated = submit_answers(word_list, answers_int)
+    word_list_updated = submit_answers(word_list, answers)
     learning_progress = wordlistquiz.get_learning_progress(word_list_updated)
 
     get_word_lists_dao().update_learning_progress(
