@@ -31,16 +31,24 @@ class GuestUserFactory:
         return GuestUser(decoded_body["guestUserId"], decoded_body["expires"])
 
 
+def get_user():
+    return g.user
+
+
+def set_user(user):
+    g.user = user
+
+
 def load_user():
     if "Guest-Authentication-Token" in request.headers.keys():
         guest_jwt = request.headers["Guest-Authentication-Token"]
 
         current_app.logger.debug(f"Validating received guest-JWT: {guest_jwt}")
-        g.user = GuestUserFactory.from_jwt(guest_jwt, current_app.config["SECRET_KEY"])
-        current_app.logger.debug(f"Request received from ID {g.user.id}")
+        set_user(GuestUserFactory.from_jwt(guest_jwt, current_app.config["SECRET_KEY"]))
+        current_app.logger.debug(f"Request received from ID {get_user().id}")
 
     else:
-        g.user = None
+        set_user(None)
 
 
 def login_required(view):
