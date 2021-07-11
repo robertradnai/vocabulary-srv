@@ -21,9 +21,19 @@ def register_guest():
     return jsonify(res)
 
 
-class GuestUser:
+class User:
+    def __init__(self, user_id: str):
+        self._id: str = user_id
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+
+class GuestUser(User):
     def __init__(self, id: str, expires: str):
-        self.id: str = id
+        super().__init__(id)
+
         self.expires = expires
 
     def get_jwt(self, secret_key) -> str:
@@ -46,11 +56,11 @@ class GuestUserFactory:
         return GuestUser(decoded_body["guestUserId"], decoded_body["expires"])
 
 
-def get_user():
+def get_user() -> User:
     return g.user
 
 
-def set_user(user):
+def set_user(user: User):
     g.user = user
 
 
