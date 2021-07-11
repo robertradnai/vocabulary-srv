@@ -84,6 +84,9 @@ def create_app(test_config=None, config_filename=None):
     from . import routesforquiz
     app.register_blueprint(routesforquiz.bp)
 
+    from . import user
+    app.register_blueprint(user.bp)
+
     # Version information for testing the deployment system
     @app.route("/hello")
     def hello():

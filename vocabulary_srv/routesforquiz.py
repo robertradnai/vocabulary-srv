@@ -1,8 +1,7 @@
-import functools
 import os
-from typing import List, Optional
+from typing import List
 
-from flask import Blueprint, jsonify, request, current_app, Response
+from flask import Blueprint, jsonify, request, current_app, Response, g
 from vocabulary import wordlistquiz
 from vocabulary.wordlistquiz import create_quiz_round, submit_answers
 from werkzeug.exceptions import HTTPException
@@ -11,42 +10,11 @@ from wtforms import Form, StringField, BooleanField, validators
 from vocabulary_srv.models import WordListMeta, PickQuestionsResponse, WordListEntry
 from vocabulary_srv.wordcollections import show_shared_collections
 from vocabulary_srv import get_word_lists_dao
-from vocabulary_srv.user import GuestUserFactory
+from vocabulary_srv.user import GuestUserFactory, login_required, load_user, get_user
 from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
-
-
-def inject_guest_user_id(view):
-    """When the user uses the demo, a (guest) JWT identifies the user so that their progress
-    can be saved on the server. This wrapper provides the guest user ID to the routes"""
-
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-
-        guest_jwt = request.headers["Guest-Authentication-Token"]
-        current_app.logger.debug(f"Validating received guest-JWT: {guest_jwt}")
-
-        guest_user = GuestUserFactory.from_jwt(guest_jwt, current_app.config["SECRET_KEY"])
-        current_app.logger.debug(f"Request received from ID {guest_user.id}")
-
-        kwargs["guest_user_id"] = guest_user.id
-        return view(**kwargs)
-
-    return wrapped_view
-
-
-@bp.route('/register-guest', methods=('POST',))
-def register_guest():
-
-    guest_user = GuestUserFactory.generate()
-    res = {
-        "guestJwt": guest_user.get_jwt(current_app.config["SECRET_KEY"]),
-        "guestJwtBody": guest_user.get_jwt_body()
-    }
-    current_app.logger.debug(f"JWT token created: {res['guestJwt']}")
-
-    return jsonify(res)
+bp.before_app_request(load_user)
 
 
 @bp.route('/shared-lists', methods=('GET',))
@@ -60,9 +28,9 @@ def get_shared_lists():
 
 
 @bp.route('/user-lists', methods=('GET',))
-@inject_guest_user_id
-def get_user_lists(guest_user_id: str):
-    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=guest_user_id)
+@login_required
+def get_user_lists():
+    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=get_user().id)
     return jsonify([entry.meta.to_dict() for entry in word_list_entries])
     # TODO the output is not properly tested!
 
@@ -76,8 +44,8 @@ def get_available_list_meta_from_id(word_list_id: int) -> WordListMeta:
 
 
 @bp.route("/clone-word-list", methods=('POST',))
-@inject_guest_user_id
-def clone_shared(guest_user_id: str):
+@login_required
+def clone_shared():
 
     """
         This endpoint takes the chosen available word list ID. If the chosen list hasn't been
@@ -90,7 +58,7 @@ def clone_shared(guest_user_id: str):
     available_word_list_id = int(request.args['availableWordListId'])
 
     user_lists_query: List[WordListEntry] = get_word_lists_dao() \
-        .get_word_list_entries(user_id=guest_user_id,
+        .get_word_list_entries(user_id=get_user().id,
                                available_word_list_id=available_word_list_id)
     word_list_already_added = bool(len(user_lists_query))
 
@@ -106,7 +74,7 @@ def clone_shared(guest_user_id: str):
             flashcards_csv_str = f.read()
 
         user_list_meta = get_word_lists_dao() \
-            .create_item(available_list_meta, flashcards_csv_str, guest_user_id, False)
+            .create_item(available_list_meta, flashcards_csv_str, get_user().id, False)
     else:
         user_list_meta = user_lists_query[0].meta
 
@@ -114,14 +82,14 @@ def clone_shared(guest_user_id: str):
 
 
 @bp.route('/pick-question', methods=('POST', 'GET'))
-@inject_guest_user_id
-def pick_question(guest_user_id):
+@login_required
+def pick_question():
 
     user_word_list_id = int(request.args["userWordListId"])
     pick_strategy = request.args["wordPickStrategy"]
 
     word_list = get_word_lists_dao().get_word_list_entries(
-        user_word_list_id=user_word_list_id, user_id=guest_user_id)[0].word_list
+        user_word_list_id=user_word_list_id, user_id=get_user().id)[0].word_list
 
     if word_list is None:
         raise LookupError("Word list doesn't exist with the given user id and word list id")
@@ -140,20 +108,20 @@ def pick_question(guest_user_id):
 
 
 @bp.route('/answer-question', methods=('POST',))
-@inject_guest_user_id
-def answer_question(guest_user_id):
+@login_required
+def answer_question():
 
     user_word_list_id = int(request.args["userWordListId"])
     answers = {int(k): v for k, v in request.json["answers"].items()}
 
     word_list = get_word_lists_dao().get_word_list_entries(
-        user_word_list_id=user_word_list_id, user_id=guest_user_id)[0].word_list
+        user_word_list_id=user_word_list_id, user_id=get_user().id)[0].word_list
 
     word_list_updated = submit_answers(word_list, answers)
     learning_progress = wordlistquiz.get_learning_progress(word_list_updated)
 
     get_word_lists_dao().update_learning_progress(
-        user_word_list_id, guest_user_id, word_list_updated)
+        user_word_list_id, get_user().id, word_list_updated)
 
     res = {"learningProgress": learning_progress}
 
