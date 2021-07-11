@@ -14,7 +14,7 @@ def run_test_cycle(client, chosen_available_word_list_id):
 
     r_list: Response = client.get('/shared-lists')
 
-    r_register: Response = client.post('/register-guest')
+    r_register: Response = client.post('/auth/register-guest')
     guest_jwt = r_register.json["guestJwt"]
 
     # Adding the word list twice should result in only one added list

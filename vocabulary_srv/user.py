@@ -1,9 +1,24 @@
 from random import randint
-from flask import request, current_app, g, Response
+from flask import request, current_app, g, Response, Blueprint, jsonify
 import jwt
 import uuid
 import datetime
 import functools
+
+bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+
+@bp.route('/register-guest', methods=('POST',))
+def register_guest():
+
+    guest_user = GuestUserFactory.generate()
+    res = {
+        "guestJwt": guest_user.get_jwt(current_app.config["SECRET_KEY"]),
+        "guestJwtBody": guest_user.get_jwt_body()
+    }
+    current_app.logger.debug(f"JWT token created: {res['guestJwt']}")
+
+    return jsonify(res)
 
 
 class GuestUser:

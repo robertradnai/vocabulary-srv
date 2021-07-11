@@ -1,6 +1,5 @@
-import functools
 import os
-from typing import List, Optional
+from typing import List
 
 from flask import Blueprint, jsonify, request, current_app, Response, g
 from vocabulary import wordlistquiz
@@ -16,19 +15,6 @@ from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
 bp.before_app_request(load_user)
-
-
-@bp.route('/register-guest', methods=('POST',))
-def register_guest():
-
-    guest_user = GuestUserFactory.generate()
-    res = {
-        "guestJwt": guest_user.get_jwt(current_app.config["SECRET_KEY"]),
-        "guestJwtBody": guest_user.get_jwt_body()
-    }
-    current_app.logger.debug(f"JWT token created: {res['guestJwt']}")
-
-    return jsonify(res)
 
 
 @bp.route('/shared-lists', methods=('GET',))
