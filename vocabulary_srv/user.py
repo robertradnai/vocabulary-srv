@@ -1,4 +1,5 @@
-from random import randint
+from typing import Optional
+
 from flask import request, current_app, g, Response, Blueprint, jsonify
 import jwt
 import uuid
@@ -56,11 +57,11 @@ class GuestUserFactory:
         return GuestUser(decoded_body["guestUserId"], decoded_body["expires"])
 
 
-def get_user() -> User:
+def get_user() -> Optional[User]:
     return g.user
 
 
-def set_user(user: User):
+def set_user(user: Optional[User]):
     g.user = user
 
 
