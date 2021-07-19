@@ -1,9 +1,13 @@
-from random import randint
-from flask import request, current_app, g, Response, Blueprint, jsonify
+from typing import Optional
+
+from flask import request, current_app, g, Response, Blueprint, jsonify, session
+from werkzeug.utils import redirect
 import jwt
 import uuid
 import datetime
 import functools
+from requests_oauthlib import OAuth2Session
+
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -21,9 +25,52 @@ def register_guest():
     return jsonify(res)
 
 
-class GuestUser:
+@bp.route("/sign_in", methods=("GET",))
+def oauth_test_sign_in():
+
+    # https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#web-application-flow
+    oauth2_session = OAuth2Session(current_app.config["AWS_COGNITO_USER_POOL_CLIENT_ID"],
+                                   redirect_uri=current_app.config["AWS_COGNITO_REDIRECT_URL"])
+    authorization_url, state = oauth2_session.authorization_url(current_app.config["AWS_COGNITO_DOMAIN"]+"/login")
+    session['oauth_state'] = state
+    return redirect(authorization_url)
+
+
+@bp.route('/aws_cognito_redirect')
+def aws_cognito_redirect():
+
+    oauth2_session = OAuth2Session(current_app.config["AWS_COGNITO_USER_POOL_CLIENT_ID"],
+                                   state=session['oauth_state'],
+                                   redirect_uri=current_app.config["AWS_COGNITO_REDIRECT_URL"])
+    token = oauth2_session.fetch_token(token_url=current_app.config["AWS_COGNITO_DOMAIN"]+"/oauth2/token",
+                                       client_secret=current_app.config["AWS_COGNITO_USER_POOL_CLIENT_SECRET"],
+                                       authorization_response=request.url)
+    access_token = token["access_token"]
+
+    returned_content = f"""
+    Redirecting after login...
+    <script>
+        localStorage.setItem('user_access_token', '{access_token}');
+        window.location.replace("/vocabulary");
+    </script> 
+    """
+
+    return Response(returned_content)
+
+
+class User:
+    def __init__(self, user_id: str):
+        self._id: str = user_id
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+
+class GuestUser(User):
     def __init__(self, id: str, expires: str):
-        self.id: str = id
+        super().__init__(id)
+
         self.expires = expires
 
     def get_jwt(self, secret_key) -> str:
@@ -46,15 +93,19 @@ class GuestUserFactory:
         return GuestUser(decoded_body["guestUserId"], decoded_body["expires"])
 
 
-def get_user():
+def get_user() -> Optional[User]:
     return g.user
 
 
-def set_user(user):
+def set_user(user: Optional[User]):
     g.user = user
 
 
 def load_user():
+
+    # TODO implement Cognito jwt validation
+    # jsonify(oauth2_session.get(current_app.config["AWS_COGNITO_DOMAIN"]+"/oauth2/userInfo").json())
+
     if "Guest-Authentication-Token" in request.headers.keys():
         guest_jwt = request.headers["Guest-Authentication-Token"]
 
