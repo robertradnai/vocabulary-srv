@@ -25,7 +25,7 @@ def register_guest():
     return jsonify(res)
 
 
-#@bp.route("/sign_in", methods=("GET",))
+@bp.route("/sign_in", methods=("GET",))
 def oauth_test_sign_in():
 
     # https://requests-oauthlib.readthedocs.io/en/latest/oauth2_workflow.html#web-application-flow
@@ -36,7 +36,7 @@ def oauth_test_sign_in():
     return redirect(authorization_url)
 
 
-#@bp.route('/aws_cognito_redirect')
+@bp.route('/aws_cognito_redirect')
 def aws_cognito_redirect():
 
     oauth2_session = OAuth2Session(current_app.config["AWS_COGNITO_USER_POOL_CLIENT_ID"],
