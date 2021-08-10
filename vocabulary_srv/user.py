@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 from flask import request, current_app, g, Response, Blueprint, jsonify, session
 from werkzeug.utils import redirect
@@ -103,30 +103,29 @@ def set_user(user: Optional[User]):
 
 def load_user():
 
-    # TODO implement Cognito jwt validation
-    # jsonify(oauth2_session.get(current_app.config["AWS_COGNITO_DOMAIN"]+"/oauth2/userInfo").json())
+    guest_token: Optional[str] = request.headers.get("Guest-Authentication-Token")
+    oauth_token: Optional[str] = request.headers.get("Authorization")
 
-    if "Guest-Authentication-Token" in request.headers.keys():
-        guest_jwt = request.headers["Guest-Authentication-Token"]
-
-        current_app.logger.debug(f"Validating received guest-JWT: {guest_jwt}")
-        set_user(GuestUserFactory.from_jwt(guest_jwt, current_app.config["SECRET_KEY"]))
-        current_app.logger.debug(f"Request received from ID {get_user().id}")
-
+    if guest_token is not None:
+        current_app.logger.debug(f"Validating received guest-JWT: {guest_token}")
+        set_user(GuestUserFactory.from_jwt(guest_token, current_app.config["SECRET_KEY"]))
+        current_app.logger.debug(f"Request received from user ID {get_user().id}")
     else:
         set_user(None)
 
 
 def login_required(view):
-    """When the user uses the demo, a (guest) JWT identifies the user so that their progress
-    can be saved on the server. This wrapper provides the guest user ID to the routes"""
+    """Make sure that the user identity object is accessible
+    by the wrapped function."""
 
     @functools.wraps(view)
     def wrapped_view(**kwargs):
+        # TODO create a generic user object
+        assert type(get_user()) is GuestUser
 
-        if "Guest-Authentication-Token" in request.headers.keys():
-            return view(**kwargs)
-        else:
+        if get_user() is None:
             return Response(status=401)
+        else:
+            return view(**kwargs)
 
     return wrapped_view
