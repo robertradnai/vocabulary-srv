@@ -130,3 +130,9 @@ def test_feedback_subscribe(app):
 
     with app.app_context():
         assert FeedbackStorage.get_count() == 1  # Exactly one entry in the table
+
+
+def test_authentication(client):
+    resp = client.get(
+        f"/auth/profile", headers={"Authorization": "Bearer bla-bla-bla"})
+    assert resp.json["username"] == "test_user_1"

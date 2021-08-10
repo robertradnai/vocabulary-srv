@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Callable
 
 from flask import request, current_app, g, Response, Blueprint, jsonify, session
@@ -7,7 +8,7 @@ import uuid
 import datetime
 import functools
 from requests_oauthlib import OAuth2Session
-
+import requests
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -106,12 +107,40 @@ def load_user():
     guest_token: Optional[str] = request.headers.get("Guest-Authentication-Token")
     oauth_token: Optional[str] = request.headers.get("Authorization")
 
-    if guest_token is not None:
+    if oauth_token is not None:
+        request_func = requests.request if not current_app.config["TESTING"] \
+            else _mock_userinfo_response
+        set_user(load_oauth_user(request_func, oauth_token))
+    elif guest_token is not None:
         current_app.logger.debug(f"Validating received guest-JWT: {guest_token}")
         set_user(GuestUserFactory.from_jwt(guest_token, current_app.config["SECRET_KEY"]))
         current_app.logger.debug(f"Request received from user ID {get_user().id}")
     else:
         set_user(None)
+
+
+def load_oauth_user(request_func: Callable, authorization_header: str) -> Optional[User]:
+
+    aws_oauth_endpoint = current_app.config["AWS_COGNITO_DOMAIN"]
+    resp = request_func("GET", f"{aws_oauth_endpoint}/oauth2/userInfo",
+                        headers={"Authorization": f"{authorization_header}"})
+
+    if resp.status_code == 200:
+        user_id = str(resp.json()["username"])
+        logging.debug(f"Got user from OAuth endpoint: {user_id}")
+        return User(user_id=user_id)
+
+    else:
+        return None
+
+
+def _mock_userinfo_response(request_type, url, headers):
+
+    class MockResponse():
+        status_code: int = 200
+        def json(self) -> dict:
+            return {"username": "test_user_1"}
+    return MockResponse()
 
 
 def login_required(view):
@@ -121,7 +150,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         # TODO create a generic user object
-        assert type(get_user()) is GuestUser
+        #assert type(get_user()) is User
 
         if get_user() is None:
             return Response(status=401)
@@ -129,3 +158,9 @@ def login_required(view):
             return view(**kwargs)
 
     return wrapped_view
+
+
+@login_required
+@bp.route("/profile", methods=("GET",))
+def user_profile():
+    return jsonify({"username": get_user().id})
