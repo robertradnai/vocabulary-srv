@@ -1,16 +1,15 @@
 import os
 from typing import List
 
-from flask import Blueprint, jsonify, request, current_app, Response, g
+from flask import Blueprint, jsonify, request, current_app, Response
 from vocabulary import wordlistquiz
 from vocabulary.wordlistquiz import create_quiz_round, submit_answers
-from werkzeug.exceptions import HTTPException
 from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary_srv.models import WordListMeta, PickQuestionsResponse, WordListEntry
 from vocabulary_srv.wordcollections import show_shared_collections
 from vocabulary_srv import get_word_lists_dao
-from vocabulary_srv.user import GuestUserFactory, login_required, load_user, get_user
+from vocabulary_srv.user import login_required, load_user, get_user
 from vocabulary_srv.database import FeedbackStorage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
@@ -153,14 +152,3 @@ class FeedbackForm(Form):
 @bp.route('/test/raise', methods=('GET',))
 def throw_error():
     raise RuntimeError("This is an intentionally raised test exception.")
-
-
-@bp.errorhandler(Exception)
-def handle_exception(e: Exception):
-    # Pass through HTTP errors
-    if isinstance(e, HTTPException):
-        return e
-
-    current_app.logger.exception(f"Error while handling request {request.url}")
-    # Handle non-HTTP errors
-    return Response(status=500)

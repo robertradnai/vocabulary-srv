@@ -15,7 +15,5 @@ AWS_COGNITO_USER_POOL_CLIENT_ID = "3lmlqb5mlp21etl4n20lj37j39"
 AWS_COGNITO_USER_POOL_CLIENT_SECRET = os.getenv("AWS_COGNITO_USER_POOL_CLIENT_SECRET")
 AWS_COGNITO_REDIRECT_URL = 'http://localhost:5000/auth/aws_cognito_redirect'
 
-LOGGING_LEVEL = "DEBUG"
-
 # https://requests-oauthlib.readthedocs.io/en/latest/examples/real_world_example.html?highlight=http#web-app-example-of-oauth-2-web-application-flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
