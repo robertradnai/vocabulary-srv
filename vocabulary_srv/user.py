@@ -111,7 +111,7 @@ def load_user():
         request_func = requests.request if not current_app.config["TESTING"] \
             else _mock_userinfo_response
         set_user(load_oauth_user(request_func, oauth_token))
-    elif guest_token is not None:
+    elif guest_token is not None and guest_token != "null":
         current_app.logger.debug(f"Validating received guest-JWT: {guest_token}")
         set_user(GuestUserFactory.from_jwt(guest_token, current_app.config["SECRET_KEY"]))
         current_app.logger.debug(f"Request received from user ID {get_user().id}")
