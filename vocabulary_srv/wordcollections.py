@@ -1,11 +1,7 @@
-import os
-from pdb import set_trace
-
-from vocabulary.dataaccess import load_wordlist_book
-from vocabulary.stateless import Vocabulary
-from abc import ABC, abstractmethod
 from typing import List
-from yaml import load, Loader
+import yaml
+
+from vocabulary_srv.models import WordListMeta
 
 
 class WordListsElement:
@@ -19,24 +15,27 @@ class WordListsElement:
         self.word_list_id = word_list_id
 
 
-def show_shared_collections(shared_collections_metadata: str) -> List[WordListsElement]:
+def show_shared_collections(shared_collections_metadata: str) -> List[WordListMeta]:
 
     with open(shared_collections_metadata) as f:
         metadata_file_content = f.read()
 
-    metadata = load(metadata_file_content, Loader=Loader)
+    metadata = yaml.load(metadata_file_content, Loader=yaml.Loader)
 
     word_lists = []
-    for collection in metadata['shared_collections_xlsx']:
-        for word_list in collection["wordLists"]:
-            word_lists.append(
-                WordListsElement(word_collection_name=collection["wordCollection"],
-                                 word_collection_display_name=collection["wordCollectionDisplayName"],
-                                 word_list_name= word_list["wordList"],
-                                 word_list_display_name=word_list["wordListDisplayName"],
-                                 word_list_id=word_list["wordListId"])
+    for metadata_entry in metadata:
+        word_lists.append(
+            WordListMeta(
+                available_word_list_id=metadata_entry["available_word_list_id"],
+                word_list_display_name=metadata_entry["word_list_display_name"],
+                description=metadata_entry["description"],
+                lang1=metadata_entry["lang1"],
+                lang2=metadata_entry["lang2"],
+                is_added_to_user_word_lists=False,
+                user_word_list_id=None,
+                csv_filename=metadata_entry["csv_filename"]
             )
-
+        )
     return word_lists
 
 

@@ -6,7 +6,8 @@ TEST_CONFIG: dict = {
     'TESTING': True,
     'SHARED_WORKBOOKS_PATH': "../tests/testdata/shared_collections",
     "SHARED_WORKBOOKS_METADATA": "../tests/testdata/shared_collections_metadata.yml",
-    "SQLALCHEMY_DATABASE_URI": "sqlite://"
+    "SQLALCHEMY_DATABASE_URI": "sqlite://",
+    "AWS_COGNITO_DOMAIN": 'https://vocabulary-test-local.auth.eu-central-1.amazoncognito.com'
 }
 
 

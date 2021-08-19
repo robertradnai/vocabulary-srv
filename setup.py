@@ -8,6 +8,6 @@ setup(
     zip_safe=False,
     install_requires=[
         'flask', 'sqlalchemy', 'flask-security-too', 'pyjwt>=2', 'flask-cors', 'pyyaml',
-        'flask_sqlalchemy', 'psycopg2-binary', 'dataclasses-json==0.5.2'
+        'flask_sqlalchemy', 'psycopg2-binary', 'dataclasses-json==0.5.2', "requests_oauthlib"
     ],
 )

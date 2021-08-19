@@ -1,6 +1,6 @@
 blinker==1.4
 click==7.1.2
-dataclasses-json==0.5.2
+dataclasses-json==0.5.4
 dnspython==2.1.0
 email-validator==1.1.2
 et-xmlfile==1.0.1
@@ -8,7 +8,6 @@ Flask==1.1.2
 Flask-Cors==3.0.10
 Flask-Login==0.5.0
 Flask-Principal==0.4.0
-Flask-Security-Too==4.0.0
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==0.14.3
 greenlet==1.0.0
@@ -31,6 +30,6 @@ SQLAlchemy==1.4.4
 stringcase==1.2.0
 typing-extensions==3.7.4.3
 typing-inspect==0.6.0
--e git+https://github.com/robertradnai/vocabulary-lib@4f4de1ad848962893247d4103ae1da84b8e249b5#egg=vocabulary_RR
+-e git+https://github.com/robertradnai/vocabulary-lib@58c77b06c81d93ee5c512fe7ac910dd45e091031#egg=vocabulary_RR
 Werkzeug==1.0.1
 WTForms==2.3.3
