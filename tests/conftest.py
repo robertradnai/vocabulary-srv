@@ -7,8 +7,8 @@ from vocabulary_srv import create_app, init_db
 def app_config():
     yield {
         'TESTING': True,
-        'SHARED_WORKBOOKS_PATH': "testdata/shared_collections",
-        "SHARED_WORKBOOKS_METADATA": "testdata/shared_collections_metadata.yml",
+        'SHARED_WORKBOOKS_PATH': "tests/testdata/shared_collections",
+        "SHARED_WORKBOOKS_METADATA": "tests/testdata/shared_collections_metadata.yml",
         "SQLALCHEMY_DATABASE_URI": "sqlite://",
         "AWS_COGNITO_DOMAIN": 'https://vocabulary-test-local.auth.eu-central-1.amazoncognito.com'
     }
