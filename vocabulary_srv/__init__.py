@@ -19,40 +19,40 @@ loggingDictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': os.environ.get("FLASK_LOGGING_LEVEL", "INFO"),
+        'level': "INFO",
         'handlers': ['wsgi']
     }
 })
 
 
-def create_app(test_config=None, config_filename=None):
+def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
 
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__, instance_relative_config=True, instance_path=os.getcwd())
+
+    if app.config.get("DEBUG"):
+        app.logger.setLevel("DEBUG")
+
     app.config.from_mapping(
         SHARED_WORKBOOKS_PATH="shared_collections",
         SHARED_WORKBOOKS_METADATA="shared_collections_metadata.yml",
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
-    # Loading configuration
-    # Test config has a priority over the configuration file
-    # In order to enable easy tweaking of app configuration
-    # From the command line
-    if config_filename is not None:
-        config_path = os.path.join(app.instance_path, config_filename)
-        if os.path.isfile(config_path):
-            app.config.from_pyfile(config_path)
-            app.logger.debug(f"Loaded configuration from {config_path}.")
-        else:
-            raise FileNotFoundError(f"Configuration file at {config_path} "
-                                    f"is missing or access isn't granted, terminating...")
+    if test_config is None:
+        app.config.from_pyfile(os.path.join(app.instance_path, "config.py"))
     else:
-        app.logger.debug(f"No configuration file was provided.")
-
-    if test_config is not None:
         app.config.from_mapping(test_config)
         app.logger.debug("Loaded test configuration.")
+
+    # Check if the necessary files are present
+    list_metadata_path = os.path.join(app.instance_path, app.config.get("SHARED_WORKBOOKS_METADATA"))
+    if not os.path.isfile(list_metadata_path):
+        raise FileNotFoundError(f"Word list metadata wasn't found at {list_metadata_path}")
+
+    list_folder_path = os.path.join(app.instance_path, app.config.get("SHARED_WORKBOOKS_PATH"))
+    if not os.path.isdir(list_folder_path):
+        raise FileNotFoundError(f"Word lists folder wasn't found at {list_folder_path}")
 
     # Check if connection string is defined
     if app.config.get("SQLALCHEMY_DATABASE_URI") is None:
