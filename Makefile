@@ -19,4 +19,7 @@ test: venv
 	. venv/bin/activate && cd vocabulary_srv && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statis
 	. venv/bin/activate && pytest tests
 
+build:
+	sudo docker build -t vocabulary_srv -f Dockerfile .
+
 .PHONY: all run clean test
