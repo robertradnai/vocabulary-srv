@@ -4,10 +4,8 @@ from flask.wrappers import Response
 import jwt
 
 
-
-
-def test_config():
-    assert create_app({'TESTING': True, "SQLALCHEMY_DATABASE_URI": "dummy_string"}).testing
+def test_config(app_config):
+    assert create_app(app_config).testing
 
 
 def run_test_cycle(client, chosen_available_word_list_id):
