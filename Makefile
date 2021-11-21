@@ -6,7 +6,14 @@ default: live_test
 
 venv:
 	python3 -m venv venv
-	. venv/bin/activate && pip install --upgrade setuptools && pip install -r requirements.txt && pip install -e .
+
+	. venv/bin/activate && \
+	pip install --upgrade pip && \
+	pip install --upgrade setuptools==57 && \
+	pip install -r requirements.txt && \
+	pip install -e .
+	# New setuptools breaks ngram
+	# See https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
 
 .PHONY: live_test
 live_test: venv update_version
