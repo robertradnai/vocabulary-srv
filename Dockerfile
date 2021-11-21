@@ -1,7 +1,5 @@
 FROM python:3.8
 
-ARG COMMIT_HASH=main
-
 WORKDIR /app
 
 RUN pip install gunicorn

@@ -1,6 +1,7 @@
 import os
 from http.client import HTTPException
 from logging.config import dictConfig as loggingDictConfig
+import vocabulary_srv.buildinfo
 
 from flask import Flask, jsonify, g, request, Response
 
@@ -87,9 +88,9 @@ def create_app(test_config=None):
     app.register_blueprint(user.bp)
 
     # Version information for testing the deployment system
-    @app.route("/hello")
+    @app.route("/info")
     def hello():
-        return jsonify({"build": "2020-12-25 test"})
+        return jsonify({"version": buildinfo.VERSION, 'build_date':buildinfo.BUILD_DATE})
 
     @app.errorhandler(Exception)
     def handle_exception(e: Exception):
