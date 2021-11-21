@@ -1,5 +1,6 @@
 PROJECT_DIR = "$(shell cd "$( dirname "${BASH_SOURCE[0]}" )/.." &> /dev/null && pwd )"
 BACKEND_VERSION=0.1.0-SNAPSHOT
+DOCKER_REPOSITORY=
 
 default: live_test
 
@@ -67,5 +68,5 @@ stop_live_test_docker:
 
 .PHONY: publish
 publish:
-	docker tag vocabulary_srv robertradnai/vocabulary_srv:${BACKEND_VERSION}
-	docker push robertradnai/vocabulary_srv:${BACKEND_VERSION}
+	sudo docker tag vocabulary_srv ${DOCKER_REPOSITORY}/vocabulary_srv:${BACKEND_VERSION}
+	sudo docker push ${DOCKER_REPOSITORY}/vocabulary_srv:${BACKEND_VERSION}
