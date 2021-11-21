@@ -1,7 +1,7 @@
 import os
 from http.client import HTTPException
 from logging.config import dictConfig as loggingDictConfig
-import vocabulary_srv.buildinfo
+import vocabulary_srv.buildinfo as buildinfo  # Without 'as buildinfo', flake8 says undefined name
 
 from flask import Flask, jsonify, g, request, Response
 
