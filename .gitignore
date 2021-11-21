@@ -1,8 +1,10 @@
 # Own entries
 .idea/
+.vscode/
 server-repo.iml
 dev_instance_data/
 tests/testdata_temp/
+vocabulary_srv/buildinfo.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

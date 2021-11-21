@@ -1,7 +1,7 @@
 on:
   push:
-    branches: [ main, develop ]
-    
+    branches: [ main, develop, develop_workflow ]
+
 jobs:
   build:
 
@@ -13,8 +13,8 @@ jobs:
       run: make build
     - name: Tag and upload docker image
       env: # Or as an environment variable
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
-        echo $DOCKERHUB_PASSWORD | sudo docker login --username robertradnai --password-stdin
-        sudo docker tag vocabulary_srv robertradnai/vocabulary_srv:"$(git branch --show-current)"
-        sudo docker push robertradnai/vocabulary_srv:"$(git branch --show-current)"
+        echo $DOCKERHUB_TOKEN | sudo docker login --username $DOCKERHUB_USERNAME --password-stdin
+        make publish DOCKER_REPOSITORY=$DOCKERHUB_USERNAME

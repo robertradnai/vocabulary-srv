@@ -16,7 +16,14 @@ os.environ["FLASK_ENV"] = "development"
 app = create_app()
 runner = app.test_cli_runner()
 result = runner.invoke(app.cli.get_command(cmd_name="init-db", ctx=app))
+print(f"Result of init-db: {result}")
 print(result.stdout)
 
+if result.exit_code != 0:
+    print("init-db had non-zero return status, terminating...")
+    import sys; sys.exit()
+
 # Running the app
-app.run()
+app.run(use_reloader=False) 
+# TODO Find a better fix: app doesn't start with reloader
+# when called with make
