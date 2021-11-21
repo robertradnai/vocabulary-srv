@@ -1,5 +1,6 @@
 # Own entries
 .idea/
+.vscode/
 server-repo.iml
 dev_instance_data/
 tests/testdata_temp/
