@@ -108,7 +108,7 @@ def create_app(test_config=None):
     return app
 
 
-def get_word_lists_dao():
+def get_word_lists_dao() -> DbWordListStorage:
     if "word_lists_dao" not in g:
         g.word_lists_dao = DbWordListStorage()
     return g.word_lists_dao

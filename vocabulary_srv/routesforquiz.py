@@ -54,28 +54,33 @@ def clone_shared():
         without adding the list to the user's word lists again.
     """
 
-    available_word_list_id = int(request.args['availableWordListId'])
+    av_wl_id = int(request.args['availableWordListId'])
+    user_id = get_user().id
 
-    user_lists_query: List[WordListEntry] = get_word_lists_dao() \
-        .get_word_list_entries(user_id=get_user().id,
-                               available_word_list_id=available_word_list_id)
-    word_list_already_added = bool(len(user_lists_query))
+    existing_wls: List[WordListEntry] = get_word_lists_dao() \
+        .get_word_list_entries(user_id=user_id,
+                               available_word_list_id=av_wl_id)
 
-    if not word_list_already_added:
-        available_list_meta = get_available_list_meta_from_id(available_word_list_id)
-        word_list_csv_path = os.path.join(current_app.instance_path,
+    if len(existing_wls) > 1:
+        raise ValueError(f'Illegal state: av. word list {av_wl_id} has been'
+                         f'added to user ID {user_id} more than once!')
+
+    wl_present = bool(len(existing_wls))
+    if wl_present:
+        user_list_meta = existing_wls[0].meta
+    else:
+        av_list_meta = get_available_list_meta_from_id(av_wl_id)
+        wl_csv_path = os.path.join(current_app.instance_path,
                                           current_app.config["SHARED_WORKBOOKS_PATH"],
-                                          available_list_meta.csv_filename)
-        if not os.path.exists(word_list_csv_path):
-            return Response(status=400)
+                                          av_list_meta.csv_filename)
+        if not os.path.exists(wl_csv_path):
+            return Response(f'availableWordListId {av_wl_id} not found', status=404)
 
-        with open(word_list_csv_path) as f:
+        with open(wl_csv_path) as f:
             flashcards_csv_str = f.read()
 
         user_list_meta = get_word_lists_dao() \
-            .create_item(available_list_meta, flashcards_csv_str, get_user().id, False)
-    else:
-        user_list_meta = user_lists_query[0].meta
+            .create_item(av_list_meta, flashcards_csv_str, user_id, False)
 
     return jsonify(user_list_meta.to_dict())
 
