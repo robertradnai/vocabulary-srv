@@ -12,8 +12,9 @@ import click
 from .dbrepository import DbWordListStorage, FeedbackStorage
 from .dbmodels import Base
 
+# https://nestedsoftware.com/2018/06/11/flask-and-sqlalchemy-without-the-flask-sqlalchemy-extension-3cf8.34704.html
 engine = None
-Session = None
+Session = scoped_session(sessionmaker())
 
 
 def get_word_lists_dao() -> DbWordListStorage:
@@ -36,25 +37,22 @@ def get_engine():
     global engine
     if engine is None:
         engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'], echo=False)
+        Session.configure(bind=engine)
     return engine
 
 
 def get_db_session():
-    # See comment in get_engine func
-    global Session
-    if Session is None:
-        Session = scoped_session(sessionmaker(bind=get_engine()))
-    return Session() # Session is a class factory, Session() is a class
+    get_engine()
+    return Session # Session is a class factory, Session() is a class
 
 
 def close_session(e=None):
     """If this request connected to the database, close the
     connection.
     """
-    if Session is not None:
-        Session.remove() 
-        # scoped_session will automatically create 
-        # a new session after the removal if needed
+    Session.remove() 
+    # scoped_session will automatically create 
+    # a new session after the removal if needed
 
 
 def init_app(app):
