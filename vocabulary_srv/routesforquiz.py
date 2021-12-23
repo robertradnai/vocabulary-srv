@@ -8,9 +8,9 @@ from wtforms import Form, StringField, BooleanField, validators
 
 from vocabulary_srv.models import WordListMeta, PickQuestionsResponse, WordListEntry
 from vocabulary_srv.wordcollections import show_shared_collections
-from vocabulary_srv import get_word_lists_dao
+
 from vocabulary_srv.user import login_required, load_user, get_user
-from vocabulary_srv.database import FeedbackStorage
+from .services import get_word_lists_dao, get_feedback_storage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
 bp.before_app_request(load_user)
@@ -138,7 +138,7 @@ def feedback_subscribe():
     if not form.validate():
         return Response(status=400)
     else:
-        FeedbackStorage.insert(name=form.name.data,
+        get_feedback_storage().insert(name=form.name.data,
                                email=form.email.data,
                                is_subscribe=form.is_subscribe.data,
                                subject=form.subject.data,

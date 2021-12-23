@@ -34,6 +34,7 @@ test: venv update_version
 	# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 	. venv/bin/activate && cd vocabulary_srv && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statis
 	. venv/bin/activate && pytest tests
+	# Running a single test: pytest tests/test_srv_demo.py::test_feedback_subscribe
 
 .PHONY: update_version
 update_version:

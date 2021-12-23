@@ -1,54 +1,10 @@
 from datetime import datetime
 from typing import Optional, List
 
-import click
-from flask import g
-from flask.cli import with_appcontext
-from flask_sqlalchemy import SQLAlchemy
 from vocabulary import WordList, wordlistquiz
 from vocabulary.dataaccess import build_word_list_csv, save_word_list_learning_progress_json
 
-from vocabulary_srv.dataaccess import IWordCollectionsDao
 from vocabulary_srv.models import WordListMeta, UserWordListMeta, WordListEntry
-
-db: SQLAlchemy = SQLAlchemy()
-
-
-def close_db(e=None):
-    """If this request connected to the database, close the
-    connection.
-    """
-    db = g.pop("db_session", None)
-
-    if db is not None:
-        db.close()
-
-
-def init_db():
-    """Clear existing data and create new tables."""
-
-    # import all modules here that might define models so that
-    # they will be registered properly on the metadata.  Otherwise
-    # you will have to import them first before calling init_db()
-
-    db.drop_all()
-    db.create_all()
-
-
-@click.command("init-db")
-@with_appcontext
-def init_db_command():
-    """Clear existing data and create new tables."""
-    init_db()
-    click.echo("Initialized the database.")
-
-
-def init_app(app):
-    """Register database functions with the Flask app. This is called by
-    the application factory.
-    """
-    app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
 
 
 def build_word_list_entry(entry):
@@ -75,9 +31,10 @@ def build_word_list_entry(entry):
 
 
 class DbWordListStorage:
-    def __init__(self):
+    def __init__(self, session):
         from .dbmodels import WordListsTable
         self.word_lists_table = WordListsTable
+        self._session = session
 
     def create_item(self, word_list_meta: WordListMeta, csv_str: str, user_id: str, is_addable: bool)\
             -> UserWordListMeta:
@@ -94,8 +51,8 @@ class DbWordListStorage:
             learning_progress_json=None
         )
 
-        db.session.add(entry)
-        db.session.commit()
+        self._session.add(entry)
+        self._session.commit()
         return build_word_list_entry(entry).meta
 
     def get_word_list_entries(self, user_id, user_word_list_id=None, available_word_list_id=None)\
@@ -107,13 +64,13 @@ class DbWordListStorage:
         if available_word_list_id is not None:
             filters["available_word_list_id"] = available_word_list_id
 
-        entries = self.word_lists_table .query.filter_by(**filters)
+        entries = self._session.query(self.word_lists_table).filter_by(**filters)
         return [build_word_list_entry(entry) for entry in entries]
 
     def update_learning_progress(self, user_word_list_id, user_id, word_list: WordList):
 
-        entry = self.word_lists_table \
-            .query.filter_by(id=user_word_list_id, user_id=user_id).first()
+        entry = self._session \
+            .query(self.word_lists_table).filter_by(id=user_word_list_id, user_id=user_id).first()
 
         if entry is None:
             raise LookupError("Word list doesn't exist with the given user id and word list id")
@@ -121,23 +78,25 @@ class DbWordListStorage:
         entry.learning_progress_json = \
             save_word_list_learning_progress_json(word_list.learning_progress_codes)
 
-        db.session.commit()
+        self._session.commit()
 
 
 class FeedbackStorage:
-    @staticmethod
-    def insert(name, email, is_subscribe, subject, message):
+
+    def __init__(self, session):
+        self._session = session
         from .dbmodels import Feedback
-        entry = Feedback(name=name,
+        self._feedback_table = Feedback
+
+    def insert(self, name, email, is_subscribe, subject, message):
+        entry = self._feedback_table(name=name,
                          submitted_at=datetime.now(),
                          email=email,
                          is_subscribe=is_subscribe,
                          subject=subject,
                          message=message)
-        db.session.add(entry)
-        db.session.commit()
+        self._session.add(entry)
+        self._session.commit()
 
-    @staticmethod
-    def get_count():
-        from .dbmodels import Feedback
-        return db.session.query(Feedback.name).count()
+    def get_count(self):
+        return self._session.query(self._feedback_table.name).count()
