@@ -13,11 +13,14 @@ from .dbrepository import DbWordListStorage, FeedbackStorage
 from .dbmodels import Base
 
 engine = None
+Session = None
+
 
 def get_word_lists_dao() -> DbWordListStorage:
     if "word_lists_dao" not in g:
         g.word_lists_dao = DbWordListStorage(get_db_session())
     return g.word_lists_dao
+
 
 def get_feedback_storage() -> FeedbackStorage:
     if "feedback_storage" not in g:
@@ -26,26 +29,32 @@ def get_feedback_storage() -> FeedbackStorage:
 
 
 def get_engine():
+    # Lazy loading for the engine
+    # This will be a singleton object throughout the whole life of the app
+    # App context occasionally gets destroyed and then the in-memory sqlite db is recreated
+    # That's why I used global variables
     global engine
     if engine is None:
-        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+        engine = create_engine(current_app.config['SQLALCHEMY_DATABASE_URI'], echo=False)
     return engine
 
 
 def get_db_session():
-    if 'db_session' not in g:
-        g.db_session = scoped_session(sessionmaker(bind=get_engine()))
-    return g.db_session()
+    # See comment in get_engine func
+    global Session
+    if Session is None:
+        Session = scoped_session(sessionmaker(bind=get_engine()))
+    return Session() # Session is a class factory, Session() is a class
 
 
 def close_session(e=None):
     """If this request connected to the database, close the
     connection.
     """
-    session = g.pop("db_session", None)
-
-    if session is not None:
-        session.remove()
+    if Session is not None:
+        Session.remove() 
+        # scoped_session will automatically create 
+        # a new session after the removal if needed
 
 
 def init_app(app):
