@@ -11,7 +11,9 @@ venv:
 	pip install --upgrade pip && \
 	pip install --upgrade setuptools==57 && \
 	pip install -r requirements.txt && \
-	pip install -e .
+	pip install -e . && \
+	pip install pylint
+	# pylint is needed for VSCode development
 	# New setuptools breaks ngram
 	# See https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
 
@@ -32,6 +34,7 @@ test: venv update_version
 	# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 	. venv/bin/activate && cd vocabulary_srv && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statis
 	. venv/bin/activate && pytest tests
+	# Running a single test: pytest tests/test_srv_demo.py::test_feedback_subscribe
 
 .PHONY: update_version
 update_version:

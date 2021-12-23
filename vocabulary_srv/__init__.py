@@ -3,11 +3,9 @@ from http.client import HTTPException
 from logging.config import dictConfig as loggingDictConfig
 import vocabulary_srv.buildinfo as buildinfo  # Without 'as buildinfo', flake8 says undefined name
 
-from flask import Flask, jsonify, g, request, Response
+from flask import Flask, jsonify, g, request, Response, current_app
 
-from vocabulary_srv.dataaccess import IWordCollectionsDao
-from .database import db
-from .database import init_db, init_app, DbWordListStorage
+from .services import init_app
 
 loggingDictConfig({
     'version': 1,
@@ -76,10 +74,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # The db engine needs to know about the models
-    from . import dbmodels
-    db.init_app(app)
-
     # Routes for the application
     from . import routesforquiz
     app.register_blueprint(routesforquiz.bp)
@@ -108,7 +102,3 @@ def create_app(test_config=None):
     return app
 
 
-def get_word_lists_dao():
-    if "word_lists_dao" not in g:
-        g.word_lists_dao = DbWordListStorage()
-    return g.word_lists_dao

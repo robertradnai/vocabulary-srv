@@ -1,5 +1,5 @@
 from vocabulary_srv import create_app
-from vocabulary_srv.database import FeedbackStorage
+from vocabulary_srv.services import get_feedback_storage
 from flask.wrappers import Response
 import jwt
 
@@ -112,7 +112,7 @@ def test_feedback_subscribe(app):
     # for parameters
 
     with app.app_context():
-        assert FeedbackStorage.get_count() == 0  # No entries in the table
+        assert get_feedback_storage().get_count() == 0  # No entries in the table
 
     form_data = {"name": "Aladar", "email": "aladar@example.com", "is_subscribe": True,
                  "subject": "some subject", "message": "some message"}
@@ -127,7 +127,7 @@ def test_feedback_subscribe(app):
     assert r_bad_email.status_code == 400
 
     with app.app_context():
-        assert FeedbackStorage.get_count() == 1  # Exactly one entry in the table
+        assert get_feedback_storage().get_count() == 1  # Exactly one entry in the table
 
 
 def test_authentication(client):
