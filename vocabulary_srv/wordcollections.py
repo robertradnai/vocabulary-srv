@@ -1,7 +1,7 @@
 from typing import List
 import yaml
 
-from vocabulary_srv.models import WordListMeta
+from .models import WordListMeta
 
 
 class WordListsElement:

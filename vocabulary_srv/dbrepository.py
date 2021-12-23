@@ -4,7 +4,7 @@ from typing import Optional, List
 from vocabulary import WordList, wordlistquiz
 from vocabulary.dataaccess import build_word_list_csv, save_word_list_learning_progress_json
 
-from vocabulary_srv.models import WordListMeta, UserWordListMeta, WordListEntry
+from .models import WordListMeta, UserWordListMeta, WordListEntry
 
 
 def build_word_list_entry(entry):

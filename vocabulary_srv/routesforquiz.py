@@ -6,10 +6,10 @@ from vocabulary import wordlistquiz
 from vocabulary.wordlistquiz import create_quiz_round, submit_answers
 from wtforms import Form, StringField, BooleanField, validators
 
-from vocabulary_srv.models import WordListMeta, PickQuestionsResponse, WordListEntry
-from vocabulary_srv.wordcollections import show_shared_collections
+from .models import WordListMeta, PickQuestionsResponse, WordListEntry
+from .wordcollections import show_shared_collections
 
-from vocabulary_srv.user import login_required, load_user, get_user
+from .user import login_required, load_user, get_user
 from .services import get_word_lists_dao, get_feedback_storage
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
