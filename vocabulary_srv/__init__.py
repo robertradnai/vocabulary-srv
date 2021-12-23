@@ -4,8 +4,10 @@ from logging.config import dictConfig as loggingDictConfig
 import vocabulary_srv.buildinfo as buildinfo  # Without 'as buildinfo', flake8 says undefined name
 
 from flask import Flask, jsonify, g, request, Response, current_app
+from flask.cli import with_appcontext
+import click
 
-from .services import init_app
+from .dbrepository import configure_db, init_db, close_session
 
 loggingDictConfig({
     'version': 1,
@@ -97,8 +99,15 @@ def create_app(test_config=None):
         # Handle non-HTTP errors
         return Response(status=500)
 
-    init_app(app)  # Register database command for flask
+    configure_db(app.config['SQLALCHEMY_DATABASE_URI'])
+    app.teardown_appcontext(close_session)
+
+    @click.command("init-db")
+    @with_appcontext
+    def init_db_command():
+        """Clear existing data and create new tables."""
+        init_db()
+        click.echo("Initialized the database.")
+    app.cli.add_command(init_db_command)
 
     return app
-
-

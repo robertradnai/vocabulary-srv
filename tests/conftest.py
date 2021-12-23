@@ -1,7 +1,7 @@
 import pytest
 
 from vocabulary_srv import create_app
-from vocabulary_srv.services import init_db
+from vocabulary_srv.dbrepository import init_db
 
 
 @pytest.fixture

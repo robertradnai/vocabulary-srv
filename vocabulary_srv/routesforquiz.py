@@ -10,7 +10,7 @@ from .models import WordListMeta, PickQuestionsResponse, WordListEntry
 from .wordcollections import show_shared_collections
 
 from .user import login_required, load_user, get_user
-from .services import get_word_lists_dao, get_feedback_storage
+from .dbrepository import WLRepository, FeedbackRepository
 
 bp = Blueprint('vocabulary', __name__, url_prefix='/')
 bp.before_app_request(load_user)
@@ -29,7 +29,7 @@ def get_shared_lists():
 @bp.route('/user-lists', methods=('GET',))
 @login_required
 def get_user_lists():
-    word_list_entries = get_word_lists_dao().get_word_list_entries(user_id=get_user().id)
+    word_list_entries = WLRepository.get_word_list_entries(user_id=get_user().id)
     return jsonify([entry.meta.to_dict() for entry in word_list_entries])
     # TODO the output is not properly tested!
 
@@ -57,7 +57,7 @@ def clone_shared():
     av_wl_id = int(request.args['availableWordListId'])
     user_id = get_user().id
 
-    existing_wls: List[WordListEntry] = get_word_lists_dao() \
+    existing_wls: List[WordListEntry] = WLRepository \
         .get_word_list_entries(user_id=user_id,
                                available_word_list_id=av_wl_id)
 
@@ -79,7 +79,7 @@ def clone_shared():
         with open(wl_csv_path) as f:
             flashcards_csv_str = f.read()
 
-        user_list_meta = get_word_lists_dao() \
+        user_list_meta = WLRepository \
             .create_item(av_list_meta, flashcards_csv_str, user_id, False)
 
     return jsonify(user_list_meta.to_dict())
@@ -92,7 +92,7 @@ def pick_question():
     user_word_list_id = int(request.args["userWordListId"])
     pick_strategy = request.args["wordPickStrategy"]
 
-    word_list = get_word_lists_dao().get_word_list_entries(
+    word_list = WLRepository.get_word_list_entries(
         user_word_list_id=user_word_list_id, user_id=get_user().id)[0].word_list
 
     if word_list is None:
@@ -118,13 +118,13 @@ def answer_question():
     user_word_list_id = int(request.args["userWordListId"])
     answers = {int(k): v for k, v in request.json["answers"].items()}
 
-    word_list = get_word_lists_dao().get_word_list_entries(
+    word_list = WLRepository.get_word_list_entries(
         user_word_list_id=user_word_list_id, user_id=get_user().id)[0].word_list
 
     word_list_updated = submit_answers(word_list, answers)
     learning_progress = wordlistquiz.get_learning_progress(word_list_updated)
 
-    get_word_lists_dao().update_learning_progress(
+    WLRepository.update_learning_progress(
         user_word_list_id, get_user().id, word_list_updated)
 
     res = {"learningProgress": learning_progress}
@@ -138,11 +138,11 @@ def feedback_subscribe():
     if not form.validate():
         return Response(status=400)
     else:
-        get_feedback_storage().insert(name=form.name.data,
-                               email=form.email.data,
-                               is_subscribe=form.is_subscribe.data,
-                               subject=form.subject.data,
-                               message=form.message.data)
+        FeedbackRepository.insert(name=form.name.data,
+                                  email=form.email.data,
+                                  is_subscribe=form.is_subscribe.data,
+                                  subject=form.subject.data,
+                                  message=form.message.data)
         return Response(status=200)
 
 
