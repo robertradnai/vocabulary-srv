@@ -11,7 +11,9 @@ venv:
 	pip install --upgrade pip && \
 	pip install --upgrade setuptools==57 && \
 	pip install -r requirements.txt && \
-	pip install -e .
+	pip install -e . && \
+	pip install pylint
+	# pylint is needed for VSCode development
 	# New setuptools breaks ngram
 	# See https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
 
