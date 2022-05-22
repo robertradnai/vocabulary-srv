@@ -1,0 +1,33 @@
+version: "3.3"  # optional since v1.27.0
+
+services:
+  vocabulary_db:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=vocabulary_test_u
+      - POSTGRES_PASSWORD=vocabulary_test
+      - POSTGRES_DB=vocabulary_test
+  vocabulary_srv_container:
+    image: vocabulary_srv:snapshot
+    ports:
+      - 5100:5000
+    volumes:
+      - "${PROJECT_DIR}/scripts/dockerconfig.py:/app/config.py"
+      - "${PROJECT_DIR}/tests/testdata/shared_collections:/app/shared_collections"
+      - "${PROJECT_DIR}/tests/testdata/shared_collections_metadata.yml:/app/shared_collections_metadata.yml"
+    entrypoint: bash -c "sleep 10 && flask init-db && gunicorn -w 4 -b 0.0.0.0:5000 \"vocabulary_srv:create_app()\""
+    environment:
+      - PORT=5000
+    depends_on:
+      - vocabulary_db
+  front_end:
+    image: vocabulary_front_end:snapshot
+    ports:
+      - 4200:80
+      - 4201:443
+    depends_on:
+      - vocabulary_srv_container
+networks:
+  default:

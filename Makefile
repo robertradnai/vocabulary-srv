@@ -44,12 +44,17 @@ update_version:
 
 .PHONY: build
 build: update_version
-	docker build -t vocabulary_srv -f Dockerfile .
+	docker build -t vocabulary_srv:snapshot -f Dockerfile .
 
 .PHONY: run_db
 run_db:
 	docker network create -d bridge vocabulary || :
 	docker run --rm --name postgres-test --network="vocabulary" -p 5432:5432 -e POSTGRES_PASSWORD=vocabulary_test -e POSTGRES_USER=vocabulary_test postgres
+
+.PHONY: live_test_docker_2
+live_test_docker_2: build 
+	docker-compose -p vocabulary down -v
+	PROJECT_DIR=$(PROJECT_DIR) docker-compose -p vocabulary up
 
 .PHONY: live_test_docker
 live_test_docker:
