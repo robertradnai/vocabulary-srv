@@ -17,9 +17,14 @@ venv:
 	# New setuptools breaks ngram
 	# See https://stackoverflow.com/questions/69100275/error-while-downloading-the-requirements-using-pip-install-setup-command-use-2
 
+.PHONY: run_db
+run_db:
+	docker-compose -p vocabulary down -v
+	docker-compose -p vocabulary up vocabulary_db
+
 .PHONY: live_test
 live_test: venv update_version
-	. venv/bin/activate && pip -V && which python && python scripts/live_test.py
+	. venv/bin/activate && sleep 10 && python scripts/live_test.py
 
 .PHONY: clean
 clean:
@@ -46,40 +51,10 @@ update_version:
 build: update_version
 	docker build -t vocabulary_srv:snapshot -f Dockerfile .
 
-.PHONY: run_db
-run_db:
-	docker network create -d bridge vocabulary || :
-	docker run --rm --name postgres-test --network="vocabulary" -p 5432:5432 -e POSTGRES_PASSWORD=vocabulary_test -e POSTGRES_USER=vocabulary_test postgres
-
-.PHONY: live_test_docker_2
-live_test_docker_2: build 
+.PHONY: live_test_docker
+live_test_docker: build 
 	docker-compose -p vocabulary down -v
 	PROJECT_DIR=$(PROJECT_DIR) docker-compose -p vocabulary up
-
-.PHONY: live_test_docker
-live_test_docker:
-
-	docker network create -d bridge vocabulary || :
-
-	docker run --rm -it --network="vocabulary" --name vocabulary_srv_container \
-	-v "$(PROJECT_DIR)/scripts/dockerconfig.py:/app/config.py" \
-	-v "$(PROJECT_DIR)/tests/testdata/shared_collections:/app/shared_collections" \
-	-v "$(PROJECT_DIR)/tests/testdata/shared_collections_metadata.yml:/app/shared_collections_metadata.yml" \
-	vocabulary_srv flask init-db
-
-	docker run --rm -d --network="vocabulary" --name vocabulary_srv_container \
-	-v "$(PROJECT_DIR)/scripts/dockerconfig.py:/app/config.py" \
-	-v "$(PROJECT_DIR)/tests/testdata/shared_collections:/app/shared_collections" \
-	-v "$(PROJECT_DIR)/tests/testdata/shared_collections_metadata.yml:/app/shared_collections_metadata.yml" \
-	-e 'PORT=5000' \
-	-p 5100:5000 \
-	vocabulary_srv
-
-	docker logs -f vocabulary_srv_container
-
-.PHONY: stop_live_test_docker
-stop_live_test_docker:
-	docker container stop vocabulary_srv_container || :
 
 .PHONY: publish
 publish:

@@ -6,7 +6,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=vocabulary_test_u
+      - POSTGRES_USER=vocabulary_test
       - POSTGRES_PASSWORD=vocabulary_test
       - POSTGRES_DB=vocabulary_test
   vocabulary_srv_container:
