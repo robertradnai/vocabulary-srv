@@ -17,7 +17,6 @@ Session = scoped_session(sessionmaker())
 
 def configure_db(conn_str):
     global engine
-    global Session
     engine = create_engine(conn_str, echo=False)
     Session.configure(bind=engine)
 

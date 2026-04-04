@@ -1,11 +1,14 @@
-PROJECT_DIR = "$(shell cd "$( dirname "${BASH_SOURCE[0]}" )/.." &> /dev/null && pwd )"
+include .env
+SHELL := /bin/bash
+
+PROJECT_DIR = "$(shell pwd )"
 BACKEND_VERSION=0.1.0-SNAPSHOT
 DOCKER_REPOSITORY=
 
 default: live_test
 
 venv:
-	python3 -m venv venv
+	python3.10 -m venv venv
 
 	. venv/bin/activate && \
 	pip install --upgrade pip && \
@@ -19,8 +22,8 @@ venv:
 
 .PHONY: run_db
 run_db:
-	docker-compose -p vocabulary down -v
-	docker-compose -p vocabulary up vocabulary_db
+	docker compose -p vocabulary down -v
+	docker compose -p vocabulary up vocabulary_db
 
 .PHONY: live_test
 live_test: venv update_version
@@ -38,7 +41,7 @@ test: venv update_version
 	. venv/bin/activate && cd vocabulary_srv && flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 	# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 	. venv/bin/activate && cd vocabulary_srv && flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statis
-	. venv/bin/activate && pytest tests
+	. venv/bin/activate && . .env && pytest tests
 	# Running a single test: pytest tests/test_srv_demo.py::test_feedback_subscribe
 
 .PHONY: update_version
@@ -49,12 +52,13 @@ update_version:
 
 .PHONY: build
 build: update_version
+	cp -r ${VOCABULARY_LIB} tmp/
 	docker build -t vocabulary_srv:snapshot -f Dockerfile .
 
 .PHONY: live_test_docker
 live_test_docker: build 
-	docker-compose -p vocabulary down -v
-	PROJECT_DIR=$(PROJECT_DIR) docker-compose -p vocabulary up
+	docker compose -p vocabulary down -v
+	PROJECT_DIR=$(PROJECT_DIR) docker compose -p vocabulary up
 
 .PHONY: publish
 publish:
